@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  /* Primary — refined teal, premium SaaS feel */
+  --color-primary-50: #f0fdfa;
+  --color-primary-100: #ccfbf1;
+  --color-primary-200: #99f6e4;
+  --color-primary-300: #5eead4;
+  --color-primary-400: #2dd4bf;
+  --color-primary-500: #14b8a6;
+  --color-primary-600: #0d9488;
+  --color-primary-700: #0f766e;
+  --color-primary-800: #115e59;
+  --color-primary-900: #134e4a;
+
+  --color-success-50: #f0fdf6;
+  --color-success-100: #dcfce9;
+  --color-success-500: #12b76a;
+  --color-success-600: #039855;
+  --color-success-700: #027a48;
+
+  --color-danger-50: #fef3f2;
+  --color-danger-100: #fee4e2;
+  --color-danger-500: #f04438;
+  --color-danger-600: #d92d20;
+  --color-danger-700: #b42318;
+
+  --color-surface: #ffffff;
+  --color-canvas: #f7f7f8;
+  --color-ink: #111113;
+  --color-muted: #71717a;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-md: 0 4px 8px -2px rgba(16, 24, 40, 0.06), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 12px 24px -4px rgba(16, 24, 40, 0.08), 0 4px 8px -2px rgba(16, 24, 40, 0.04);
+  --shadow-xl: 0 20px 40px -8px rgba(16, 24, 40, 0.1), 0 8px 16px -4px rgba(16, 24, 40, 0.04);
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-[#f7f7f8] text-gray-900 antialiased;
+  }
+
+  *:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-primary-500) 50%, transparent);
+    outline-offset: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #d4d4d8;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a1a1aa;
+  }
+}
+
+@layer utilities {
+  .shadow-card {
+    box-shadow: var(--shadow-sm);
+  }
+  .shadow-elevated {
+    box-shadow: var(--shadow-md);
+  }
+  .shadow-float {
+    box-shadow: var(--shadow-lg);
+  }
+  .text-balance {
+    text-wrap: balance;
+  }
+}

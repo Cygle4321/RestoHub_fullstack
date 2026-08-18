@@ -1,0 +1,274 @@
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Bike, Store, Smartphone, CreditCard, Banknote, ShoppingBag, Loader2 } from "lucide-react";
+import { Card, CardHeader, Button, Input, Textarea, Select, EmptyState, useToast } from "../../components/ui";
+import { useCart } from "../../store/CartContext";
+import { useStore } from "../../store/StoreContext";
+import { storeApi } from "../../api/store";
+import { fmt } from "../../lib/mappers";
+
+export default function Checkout() {
+  const { slug, zones } = useStore();
+  const { items, total, clear } = useCart();
+  const toast = useToast();
+  const navigate = useNavigate();
+  const { state } = useLocation();
+  const promoCode = state?.promoCode || "";
+
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [zone, setZone] = useState(zones[0]?.id ?? "");
+  const [mode, setMode] = useState("Livraison");
+  const [payment, setPayment] = useState("Mobile Money");
+  const [provider, setProvider] = useState("Orange");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExp, setCardExp] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  if (items.length === 0) {
+    return (
+      <Card className="mx-auto mt-8 max-w-2xl">
+        <EmptyState
+          icon={ShoppingBag}
+          title="Votre panier est vide"
+          description="Ajoutez des articles avant de passer commande."
+          action={<Button onClick={() => navigate(`/store/${slug}/menu`)}>Voir le menu</Button>}
+        />
+      </Card>
+    );
+  }
+
+  const selectedZone = zones.find((z) => z.id === zone);
+  const deliveryFee = mode === "Livraison" ? selectedZone?.fee ?? 0 : 0;
+  const grandTotal = total + deliveryFee;
+
+  const validate = () => {
+    const e = {};
+    if (!name.trim()) e.name = "Le nom est requis";
+    if (!phone.trim()) e.phone = "Le téléphone est requis";
+    else if (!/^[+\d][\d\s-]{6,}$/.test(phone.trim())) e.phone = "Numéro invalide";
+    if (mode === "Livraison" && !address.trim()) e.address = "L'adresse est requise";
+    if (mode === "Livraison" && zones.length > 0 && !selectedZone) e.zone = "La zone de livraison est requise";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const submit = async () => {
+    if (!validate()) {
+      toast("Veuillez corriger les erreurs du formulaire", "error");
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await storeApi.checkout(slug, {
+        name,
+        phone,
+        email,
+        mode,
+        address,
+        zoneId: selectedZone?.id,
+        payment,
+        promoCode,
+        items: items.map((it) => ({
+          product_id: it.id,
+          quantity: it.qty,
+          options: it.options,
+          supplements: it.supplements,
+        })),
+      });
+      if (result.payment_error) {
+        toast(result.payment_error, "error");
+        return;
+      }
+      clear();
+      if (result.checkout_url) {
+        toast("Redirection vers le paiement…");
+        window.location.href = result.checkout_url;
+        return;
+      }
+      toast("Commande confirmée !");
+      navigate(`/store/${slug}/confirmation`, { state: { order: result.order } });
+    } catch (err) {
+      toast(err.message || "Impossible de passer la commande", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const radioCard = (selected) =>
+    `flex w-full cursor-pointer items-start gap-3 rounded-lg border px-4 py-3 text-sm transition ${
+      selected ? "border-primary-500 bg-primary-50" : "border-zinc-200 hover:border-zinc-300"
+    }`;
+
+  return (
+    <div className="mx-auto max-w-5xl px-4 pb-8 pt-4">
+      <h1 className="text-xl font-bold text-zinc-900">Commande</h1>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px]">
+        {/* Formulaire */}
+        <div className="space-y-4">
+          {/* Vos informations */}
+          <Card>
+            <CardHeader title="Vos informations" subtitle="Pour vous contacter au sujet de la commande" />
+            <div className="grid gap-4 p-5 sm:grid-cols-2">
+              <div>
+                <Input label="Nom complet" placeholder="Ex : Aminata Koné" value={name} onChange={(e) => setName(e.target.value)} />
+                {errors.name && <p className="mt-1 text-xs font-medium text-danger-600">{errors.name}</p>}
+              </div>
+              <div>
+                <Input label="Téléphone" placeholder="+225 07 00 00 00" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                {errors.phone && <p className="mt-1 text-xs font-medium text-danger-600">{errors.phone}</p>}
+              </div>
+              <div className="sm:col-span-2">
+                <Input label="Email (optionnel)" type="email" placeholder="vous@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+            </div>
+          </Card>
+
+          {/* Mode de réception */}
+          <Card>
+            <CardHeader title="Mode de réception" />
+            <div className="grid gap-3 p-5 sm:grid-cols-2">
+              <label className={radioCard(mode === "Livraison")}>
+                <input type="radio" className="mt-0.5 h-4 w-4 accent-primary-600" checked={mode === "Livraison"} onChange={() => setMode("Livraison")} />
+                <span>
+                  <span className="flex items-center gap-1.5 font-semibold text-zinc-900"><Bike size={15} /> Livraison</span>
+                  <span className="mt-0.5 block text-xs text-zinc-500">
+                    {selectedZone?.delay ? `Livré en ${selectedZone.delay}` : "Livré à l'adresse indiquée"}
+                  </span>
+                </span>
+              </label>
+              <label className={radioCard(mode === "Retrait")}>
+                <input type="radio" className="mt-0.5 h-4 w-4 accent-primary-600" checked={mode === "Retrait"} onChange={() => setMode("Retrait")} />
+                <span>
+                  <span className="flex items-center gap-1.5 font-semibold text-zinc-900"><Store size={15} /> Retrait sur place</span>
+                  <span className="mt-0.5 block text-xs text-zinc-500">Économisez les frais de livraison</span>
+                </span>
+              </label>
+            </div>
+            {mode === "Livraison" ? (
+              <div className="grid gap-4 border-t border-zinc-100 p-5 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <Textarea label="Adresse de livraison" rows={2} placeholder="Rue, quartier, point de repère…" value={address} onChange={(e) => setAddress(e.target.value)} />
+                  {errors.address && <p className="mt-1 text-xs font-medium text-danger-600">{errors.address}</p>}
+                </div>
+                {zones.length > 0 && (
+                  <div className="sm:col-span-2">
+                    <Select label="Zone de livraison" value={zone} onChange={(e) => setZone(e.target.value)}>
+                      {zones.map((z) => (
+                        <option key={z.id} value={z.id}>
+                          {z.name} — {fmt(z.fee)}
+                          {z.delay ? ` (${z.delay})` : ""}
+                        </option>
+                      ))}
+                    </Select>
+                    {errors.zone && <p className="mt-1 text-xs font-medium text-danger-600">{errors.zone}</p>}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="border-t border-zinc-100 p-5">
+                <p className="rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                  Retrait sur place — vous serez notifié dès que votre commande est prête.
+                </p>
+              </div>
+            )}
+          </Card>
+
+          {/* Mode de paiement */}
+          <Card>
+            <CardHeader title="Mode de paiement" subtitle="Paiements sécurisés" />
+            <div className="grid gap-3 p-5 sm:grid-cols-3">
+              <label className={radioCard(payment === "Mobile Money")}>
+                <input type="radio" className="mt-0.5 h-4 w-4 accent-primary-600" checked={payment === "Mobile Money"} onChange={() => setPayment("Mobile Money")} />
+                <span>
+                  <span className="flex items-center gap-1.5 font-semibold text-zinc-900"><Smartphone size={15} /> Mobile Money</span>
+                  <span className="mt-0.5 block text-xs text-zinc-500">Orange, MTN, Wave</span>
+                </span>
+              </label>
+              <label className={radioCard(payment === "Carte bancaire")}>
+                <input type="radio" className="mt-0.5 h-4 w-4 accent-primary-600" checked={payment === "Carte bancaire"} onChange={() => setPayment("Carte bancaire")} />
+                <span>
+                  <span className="flex items-center gap-1.5 font-semibold text-zinc-900"><CreditCard size={15} /> Carte bancaire</span>
+                  <span className="mt-0.5 block text-xs text-zinc-500">Visa, Mastercard</span>
+                </span>
+              </label>
+              <label className={radioCard(payment === "Paiement à la livraison")}>
+                <input type="radio" className="mt-0.5 h-4 w-4 accent-primary-600" checked={payment === "Paiement à la livraison"} onChange={() => setPayment("Paiement à la livraison")} />
+                <span>
+                  <span className="flex items-center gap-1.5 font-semibold text-zinc-900"><Banknote size={15} /> À la livraison</span>
+                  <span className="mt-0.5 block text-xs text-zinc-500">Espèces à la réception</span>
+                </span>
+              </label>
+            </div>
+
+            {payment === "Mobile Money" && (
+              <div className="border-t border-zinc-100 p-5">
+                <p className="mb-2 text-sm font-medium text-zinc-700">Opérateur</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Orange", "MTN", "Wave"].map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setProvider(p)}
+                      className={`rounded-full px-4 py-1.5 text-sm font-medium ring-1 ring-inset transition ${
+                        provider === p ? "bg-primary-500 text-white ring-primary-500" : "bg-white text-zinc-600 ring-zinc-300 hover:bg-zinc-50"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs text-zinc-500">Vous recevrez une demande de confirmation sur votre téléphone {provider}.</p>
+              </div>
+            )}
+
+            {payment === "Carte bancaire" && (
+              <div className="grid gap-4 border-t border-zinc-100 p-5 sm:grid-cols-[1fr_120px_100px]">
+                <Input label="Numéro de carte" placeholder="4242 4242 4242 4242" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
+                <Input label="Expiration" placeholder="MM/AA" value={cardExp} onChange={(e) => setCardExp(e.target.value)} />
+                <Input label="CVC" placeholder="123" maxLength={4} value={cardCvc} onChange={(e) => setCardCvc(e.target.value)} />
+              </div>
+            )}
+          </Card>
+        </div>
+
+        {/* Résumé */}
+        <div className="lg:sticky lg:top-4 lg:self-start">
+          <Card>
+            <CardHeader title="Résumé de la commande" />
+            <div className="space-y-2 p-5 text-sm">
+              {items.map((it) => (
+                <div key={it.id} className="flex justify-between gap-2">
+                  <span className="text-zinc-600">{it.qty} × {it.name}</span>
+                  <span className="font-medium text-zinc-900">{fmt(it.price * it.qty)}</span>
+                </div>
+              ))}
+              <div className="flex justify-between border-t border-zinc-100 pt-3">
+                <span className="text-zinc-500">Sous-total</span>
+                <span className="font-medium text-zinc-900">{fmt(total)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-500">Livraison</span>
+                <span className="font-medium text-zinc-900">{mode === "Retrait" ? "Offerte" : fmt(deliveryFee)}</span>
+              </div>
+              <div className="flex justify-between border-t border-zinc-100 pt-3 text-base">
+                <span className="font-bold text-zinc-900">Total</span>
+                <span className="font-extrabold text-primary-600">{fmt(grandTotal)}</span>
+              </div>
+              <Button className="mt-3 w-full" onClick={submit} disabled={loading}>
+                {loading && <Loader2 size={16} className="animate-spin" />}
+                {loading ? "Traitement…" : "Confirmer et payer"}
+              </Button>
+              <p className="pt-1 text-center text-xs text-zinc-400">Paiement sécurisé par FedaPay · {payment}</p>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}

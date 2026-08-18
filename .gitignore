@@ -1,0 +1,23 @@
+# Dependencies
+front/node_modules/
+back/vendor/
+
+# Env
+front/.env
+back/.env
+
+# Build
+front/dist/
+back/public/hot
+back/public/storage
+back/storage/*.key
+back/storage/logs/*
+back/storage/framework/cache/*
+back/storage/framework/sessions/*
+back/storage/framework/views/*
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+*.log
