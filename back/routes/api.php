@@ -65,6 +65,7 @@ Route::prefix('store/{slug}')->group(function () {
     Route::get('/', [StoreController::class, 'show']);
     Route::get('products/{productSlug}', [StoreController::class, 'product']);
     Route::post('checkout', [StoreController::class, 'checkout']);
+    Route::post('promo/verify', [StoreController::class, 'verifyPromo']);
     Route::get('track', [StoreController::class, 'track']);
     Route::get('payment/{transactionId}', [StoreController::class, 'payment']);
 });
@@ -101,6 +102,9 @@ Route::middleware(['auth:sanctum', 'role:owner,staff', 'restaurant', 'subscripti
         Route::get('delivery/drivers', [DeliveryController::class, 'drivers']);
         Route::post('delivery/drivers', [DeliveryController::class, 'storeDriver']);
         Route::put('delivery/drivers/{driver}', [DeliveryController::class, 'updateDriver']);
+        Route::get('delivery/pending', [DeliveryController::class, 'pendingOrders']);
+        Route::post('delivery/orders/{order}/assign', [DeliveryController::class, 'assignDriver']);
+        Route::post('delivery/orders/{order}/unassign', [DeliveryController::class, 'unassignDriver']);
 
         // Promotions
         Route::get('promotions', [PromotionController::class, 'index']);

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Subscription;
-use App\Services\AdminNotifier;
+use App\Services\FedaPayService;
 use Illuminate\Http\Request;
 
 class BillingController extends Controller
@@ -44,62 +44,63 @@ class BillingController extends Controller
             ], 200);
         }
 
-        // Changement de plan : l'abonnement actif précédent est clôturé
-        // pour que le plan actuel affiché reste sans ambiguïté.
+        // Changement de plan : le précédent abonnement actif n'est clôturé
+        // qu'à la confirmation du paiement (webhook) pour ne pas couper
+        // l'accès en attendant le règlement.
+
+        // Un paiement FedaPay en attente qui n'a jamais abouti ne doit pas
+        // s'empiler : on clôt les éventuels abonnements "pending" restants
+        // avant d'en créer un nouveau.
         Subscription::where('restaurant_id', $user->restaurant_id)
-            ->where('status', 'active')
+            ->where('status', 'pending')
             ->update([
                 'status' => 'cancelled',
                 'cancelled_at' => now(),
-                'ends_at' => now(),
             ]);
 
         $subscription = Subscription::create([
             'restaurant_id' => $user->restaurant_id,
             'plan_id' => $plan->id,
-            'status' => 'active',
+            'status' => 'pending',
             'billing_cycle' => $data['billing_cycle'],
             'amount' => $amount,
-            'starts_at' => now(),
-            'ends_at' => $data['billing_cycle'] === 'yearly'
-                ? now()->addYear()
-                : now()->addMonth(),
+            'starts_at' => null,
+            'ends_at' => null,
         ]);
 
-        // Paiement validé immédiatement (FedaPay à réactiver plus tard).
-        $payment = Payment::create([
-            'restaurant_id' => $user->restaurant_id,
-            'subscription_id' => $subscription->id,
-            'provider' => 'manual',
-            'type' => 'subscription',
-            'amount' => $amount,
-            'currency' => 'XOF',
-            'status' => 'approved',
-            'method' => 'manual',
-            'paid_at' => now(),
+        // Paiement FedaPay — redirection vers la page de paiement.
+        $result = app(FedaPayService::class)->createSubscriptionPayment($subscription, [
+            'firstname' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone ?? $user->restaurant?->phone ?? '',
         ]);
 
-        $restaurant = $user->restaurant;
-        if ($restaurant && ! in_array($restaurant->status, ['suspended', 'inactive'], true)) {
-            $restaurant->update([
-                'status' => 'active',
-                'plan_id' => $plan->id,
-                'subscription_ends_at' => $subscription->ends_at,
+        $payment = $result['payment'];
+        $checkoutUrl = $result['checkout_url'];
+        $error = $result['error'] ?? null;
+
+        if ($error) {
+            $subscription->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
             ]);
+
+            return response()->json([
+                'subscription' => $subscription->fresh(),
+                'payment' => $payment,
+                'checkout_url' => null,
+                'error' => $error,
+            ], 402);
         }
 
-        app(AdminNotifier::class)->notify([
-            'kind' => 'subscription',
-            'subscription_id' => $subscription->id,
-            'plan_name' => $plan->name,
-            'restaurant_name' => $user->restaurant?->name ?? '—',
-            'amount' => $amount,
-        ]);
+        // L'abonnement devient actif à la confirmation du paiement (webhook) :
+        // clôture de l'ancien plan, activation du nouveau, mise à jour du
+        // restaurant, notification super-admins.
 
         return response()->json([
-            'subscription' => $subscription,
+            'subscription' => $subscription->fresh(),
             'payment' => $payment,
-            'checkout_url' => null,
+            'checkout_url' => $checkoutUrl,
             'error' => null,
         ], 201);
     }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Cache;
 
 class Restaurant extends Model
 {
@@ -106,5 +107,13 @@ class Restaurant extends Model
     public function canUseService(): bool
     {
         return $this->hasPaidSubscription() || $this->trialIsValid();
+    }
+
+    /**
+     * Invalide le cache de la boutique publique (produits, catégories, zones).
+     */
+    public function clearStoreCache(): void
+    {
+        Cache::forget('store:show:'.$this->slug);
     }
 }

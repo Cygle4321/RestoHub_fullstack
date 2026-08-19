@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Pencil, Plus, Trash2, Truck } from "lucide-react";
+import { MapPin, Pencil, Plus, Trash2, Truck, UserX, Loader2, CheckCircle2 } from "lucide-react";
 import { Badge, Button, Card, CardHeader, Input, Modal, Select, Table, Td, Tabs, Toggle, useToast, Spinner, statusVariant } from "../../components/ui";
 import { fmt } from "../../lib/mappers";
 import { restaurantApi } from "../../api/restaurant";
@@ -18,28 +18,30 @@ export default function Delivery() {
   const [toDeliver, setToDeliver] = useState([]);
   const [loading, setLoading] = useState(true);
   const [zoneModal, setZoneModal] = useState(false);
+  const [editingZoneId, setEditingZoneId] = useState(null);
   const [zoneForm, setZoneForm] = useState({ name: "", fee: "", delay: "" });
   const [driverModal, setDriverModal] = useState(false);
   const [driverForm, setDriverForm] = useState({ name: "", phone: "", vehicle: "Moto" });
   const [toDeleteZone, setToDeleteZone] = useState(null);
+  const [assigningId, setAssigningId] = useState(null);
+  const [pendingDrivers, setPendingDrivers] = useState({});
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [zRes, dRes, oRes] = await Promise.all([
+        const [zRes, dRes, pRes] = await Promise.all([
           restaurantApi.zones(),
           restaurantApi.drivers(),
-          restaurantApi.orders()
+          restaurantApi.pendingDelivery(),
         ]);
         if (!cancelled) {
           setZones(zRes.data || zRes || []);
           setDriversList(dRes.data || dRes || []);
-          const allOrders = oRes.data?.data || oRes.data || oRes || [];
-          setToDeliver(allOrders.filter((o) => o.mode === "Livraison" && ["Prête", "En livraison"].includes(o.status)));
+          setToDeliver(pRes || []);
         }
       } catch {
-        // Fallback or error handled silently
+        // Erreur gérée silencieusement
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -47,18 +49,42 @@ export default function Delivery() {
     return () => { cancelled = true; };
   }, []);
 
+  const refreshDrivers = async () => {
+    try {
+      const dRes = await restaurantApi.drivers();
+      setDriversList(dRes.data || dRes || []);
+    } catch {
+      /* silencieux */
+    }
+  };
+
   const saveZone = async () => {
     if (!zoneForm.name || !zoneForm.fee) return toast("Nom et frais requis", "error");
     try {
-      const res = await restaurantApi.createZone({ name: zoneForm.name, fee: Number(zoneForm.fee), delay: zoneForm.delay || "20-30 min", is_active: true });
-      const newZone = res.data || res;
-      setZones((z) => [...z, newZone]);
-      toast(`Zone « ${zoneForm.name} » ajoutée`);
+      const payload = { name: zoneForm.name, fee: Number(zoneForm.fee), delay: zoneForm.delay || "20-30 min", is_active: true };
+      if (editingZoneId) {
+        const res = await restaurantApi.updateZone(editingZoneId, payload);
+        const updated = res.data || res;
+        setZones((z) => z.map((x) => (x.id === editingZoneId ? { ...x, ...updated } : x)));
+        toast(`Zone « ${zoneForm.name} » mise à jour`);
+      } else {
+        const res = await restaurantApi.createZone(payload);
+        const newZone = res.data || res;
+        setZones((z) => [...z, newZone]);
+        toast(`Zone « ${zoneForm.name} » ajoutée`);
+      }
       setZoneForm({ name: "", fee: "", delay: "" });
+      setEditingZoneId(null);
       setZoneModal(false);
     } catch {
-      toast("Erreur d'ajout de zone", "error");
+      toast("Erreur d'enregistrement de la zone", "error");
     }
+  };
+
+  const openEditZone = (z) => {
+    setEditingZoneId(z.id);
+    setZoneForm({ name: z.name, fee: String(z.fee ?? ""), delay: z.delay || "" });
+    setZoneModal(true);
   };
 
   const saveDriver = async () => {
@@ -66,7 +92,7 @@ export default function Delivery() {
     try {
       const res = await restaurantApi.createDriver({ ...driverForm, status: "disponible" });
       const newDriver = res.data || res;
-      setDriversList((d) => [...d, { ...newDriver, orders: 0 }]);
+      setDriversList((d) => [...d, { ...newDriver, orders_today: 0 }]);
       toast(`Livreur « ${driverForm.name} » ajouté`);
       setDriverForm({ name: "", phone: "", vehicle: "Moto" });
       setDriverModal(false);
@@ -84,11 +110,44 @@ export default function Delivery() {
     }
   };
 
+  const assign = async (order, driverId) => {
+    if (!driverId) return toast("Choisissez un livreur d'abord", "error");
+    const id = order._id ?? order.id;
+    setAssigningId(id);
+    try {
+      const updated = await restaurantApi.assignDriver(id, driverId);
+      setToDeliver((l) => l.map((o) => ((o._id ?? o.id) === id ? updated : o)));
+      await refreshDrivers();
+      toast(`Livreur assigné à ${updated.number} — commande en route`);
+    } catch {
+      toast("Erreur d'assignation du livreur", "error");
+    } finally {
+      setAssigningId(null);
+    }
+  };
+
+  const unassign = async (order) => {
+    const id = order._id ?? order.id;
+    setAssigningId(id);
+    try {
+      const updated = await restaurantApi.unassignDriver(id);
+      setToDeliver((l) => l.map((o) => ((o._id ?? o.id) === id ? updated : o)));
+      await refreshDrivers();
+      toast(`Livreur retiré de ${updated.number}`, "info");
+    } catch {
+      toast("Erreur lors du retrait", "error");
+    } finally {
+      setAssigningId(null);
+    }
+  };
+
+  const selectDriver = (orderId, driverId) => setPendingDrivers((p) => ({ ...p, [orderId]: driverId }));
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">Livraison</h1>
-        {tab === "Zones" && <Button onClick={() => setZoneModal(true)}><Plus size={16} /> Ajouter une zone</Button>}
+        {tab === "Zones" && <Button onClick={() => { setEditingZoneId(null); setZoneForm({ name: "", fee: "", delay: "" }); setZoneModal(true); }}><Plus size={16} /> Ajouter une zone</Button>}
         {tab === "Livreurs" && <Button onClick={() => setDriverModal(true)}><Plus size={16} /> Inviter un livreur</Button>}
       </div>
 
@@ -109,7 +168,7 @@ export default function Delivery() {
                 <Td><Toggle checked={z.active ?? z.is_active} onChange={() => toggleZone(z)} /></Td>
                 <Td>
                   <div className="flex gap-1">
-                    <button onClick={() => toast("Modification de zone à venir", "info")} className="rounded-lg p-1.5 text-gray-400 hover:bg-primary-50 hover:text-primary-600" title="Modifier"><Pencil size={16} /></button>
+                    <button onClick={() => openEditZone(z)} className="rounded-lg p-1.5 text-gray-400 hover:bg-primary-50 hover:text-primary-600" title="Modifier"><Pencil size={16} /></button>
                     <button onClick={() => setToDeleteZone(z)} className="rounded-lg p-1.5 text-gray-400 hover:bg-danger-50 hover:text-danger-600" title="Supprimer"><Trash2 size={16} /></button>
                   </div>
                 </Td>
@@ -127,29 +186,58 @@ export default function Delivery() {
           ) : toDeliver.length === 0 ? (
             <Card><CardHeader title="Commandes à livrer" subtitle="Aucune commande en attente de livraison" /></Card>
           ) : (
-            toDeliver.map((o) => (
-            <Card key={o._id ?? o.id} className="p-5">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <p className="font-semibold text-gray-900">{o.number || o.id}</p>
-                    <Badge variant={statusVariant(o.status)} dot>{o.status}</Badge>
+            toDeliver.map((o) => {
+              const id = o._id ?? o.id;
+              const busy = assigningId === id;
+              return (
+                <Card key={id} className="p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <p className="font-semibold text-gray-900">{o.number || o.id}</p>
+                        <Badge variant={statusVariant(o.status)} dot>{o.status}</Badge>
+                        {o.driver?.name && (
+                          <Badge variant="primary" dot>Livreur : {o.driver.name}</Badge>
+                        )}
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">{o.customer.name} · {o.customer.phone}</p>
+                      <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500"><MapPin size={14} /> {o.address}</p>
+                      <p className="mt-1 text-sm font-medium text-gray-600">Total : <span className="font-bold text-gray-900">{fmt(o.total)}</span></p>
+                    </div>
+                    <div className="flex items-end gap-2">
+                      {o.driver?.name ? (
+                        <Button variant="secondary" onClick={() => unassign(o)} disabled={busy}>
+                          {busy ? <Loader2 size={16} className="animate-spin" /> : <UserX size={16} />} Retirer le livreur
+                        </Button>
+                      ) : (
+                        <>
+                          <Select
+                            value={pendingDrivers[id] || ""}
+                            onChange={(e) => selectDriver(id, e.target.value)}
+                            className="w-56"
+                          >
+                            <option value="">Assigner un livreur…</option>
+                            {driversList.map((d) => (
+                              <option key={d.id} value={d.id} disabled={d.status === "en_course"}>
+                                {d.name} ({DRIVER_STATUS_UI[d.status] || d.status})
+                              </option>
+                            ))}
+                          </Select>
+                          <Button onClick={() => assign(o, pendingDrivers[id])} disabled={busy}>
+                            {busy ? <Loader2 size={16} className="animate-spin" /> : <Truck size={16} />} Assigner
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <p className="mt-1 text-sm text-gray-500">{o.customer.name} · {o.customer.phone}</p>
-                  <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500"><MapPin size={14} /> {o.address}</p>
-                </div>
-                <div className="flex items-end gap-3">
-                  <Select value="" onChange={() => toast(`Livreur assigné à la commande ${o.number || o.id}`)} className="w-56">
-                    <option value="">Assigner un livreur…</option>
-                    {driversList.map((d) => <option key={d.id} value={d.id}>{d.name} ({DRIVER_STATUS_UI[d.status] || d.status})</option>)}
-                  </Select>
-                  <Button onClick={() => toast(`Commande ${o.number || o.id} en route`)}>
-                    <Truck size={16} /> Dispatcher
-                  </Button>
-                </div>
-              </div>
-            </Card>
-            ))
+                  {o.driver?.name && (
+                    <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-success-600">
+                      <CheckCircle2 size={14} /> Livreur assigné — la commande est passée en « En livraison ».
+                    </p>
+                  )}
+                </Card>
+              );
+            })
           )}
         </div>
       )}
@@ -167,7 +255,7 @@ export default function Delivery() {
                 <Td className="text-gray-500">{d.phone}</Td>
                 <Td>{d.vehicle}</Td>
                 <Td><Badge variant={statusVariant(DRIVER_STATUS_UI[d.status] || d.status)} dot>{DRIVER_STATUS_UI[d.status] || d.status}</Badge></Td>
-                <Td>{d.orders ?? "—"}</Td>
+                <Td>{d.orders_today ?? d.orders ?? 0}</Td>
               </tr>
             ))}
             </Table>
@@ -177,12 +265,12 @@ export default function Delivery() {
 
       <Modal
         open={zoneModal}
-        onClose={() => setZoneModal(false)}
-        title="Nouvelle zone de livraison"
+        onClose={() => { setZoneModal(false); setEditingZoneId(null); }}
+        title={editingZoneId ? "Modifier la zone" : "Nouvelle zone de livraison"}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setZoneModal(false)}>Annuler</Button>
-            <Button onClick={saveZone}>Ajouter</Button>
+            <Button variant="secondary" onClick={() => { setZoneModal(false); setEditingZoneId(null); }}>Annuler</Button>
+            <Button onClick={saveZone}>{editingZoneId ? "Enregistrer" : "Ajouter"}</Button>
           </>
         }
       >

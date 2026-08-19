@@ -26,6 +26,7 @@ import { Avatar } from "../components/ui";
 import { useAuth } from "../context/AuthContext";
 import EmailVerificationBanner from "../components/EmailVerificationBanner";
 import ConfirmDialog from "../components/ConfirmDialog";
+import SupportWidget from "../components/SupportWidget";
 import { useNavigate } from "react-router-dom";
 import { notificationApi } from "../api/notifications";
 
@@ -41,7 +42,6 @@ const nav = [
   { to: "/dashboard/shop", icon: Store, label: "Ma boutique" },
   { to: "/dashboard/qrcode", icon: QrCode, label: "QR Code" },
   { to: "/dashboard/billing", icon: CreditCard, label: "Abonnement" },
-  { to: "/dashboard/support", icon: LifeBuoy, label: "Support" },
   { to: "/dashboard/settings", icon: Settings, label: "Paramètres" },
 ];
 
@@ -321,6 +321,8 @@ export default function DashboardLayout() {
         onConfirm={doLogout}
         onClose={() => setConfirmLogout(false)}
       />
+
+      <SupportWidget />
     </div>
   );
 }

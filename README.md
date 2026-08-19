@@ -177,6 +177,16 @@ Les routes sont chargées en **lazy loading** (`React.lazy` + `Suspense`) : chaq
 
 ---
 
+## Paiements FedaPay
+
+- **Commandes boutique** : le checkout (`POST /api/store/{slug}/checkout`) crée un paiement FedaPay et renvoie un `checkout_url` (paiement `pending`). Le client est redirigé vers la page FedaPay ; la confirmation se fait via le **webhook** (ou le retour GET) → paiement `approved` + commande `paid` + notification équipe + email client (`OrderConfirmationMail`).
+- **Paiement en espèces** : approuvé immédiatement côté serveur (sans FedaPay).
+- **Abonnements** : `POST /api/restaurant/subscribe` crée l'abonnement en `pending` (statut ajouté par la migration `add_pending_status_to_subscriptions`) puis un paiement FedaPay (`checkout_url`). À l'approbation via webhook : paiement `approved`, abonnement `active` (dates définies), **l'ancien abonnement actif est clôturé**, le plan du restaurant est mis à jour et les admins sont notifiés.
+- **Webhook** : `POST /api/webhooks/fedapay` (signé HMAC-SHA256 si `FEDAPAY_WEBHOOK_SECRET` renseigné, sinon ignoré en dev) ; garde anti-doublon `wasPaid` pour ne notifier qu'une seule fois.
+- **Sandbox** : clés pré-remplies dans `.env` (`FEDAPAY_ENVIRONMENT=sandbox`) — vérifier que le réseau atteint `sandbox-api.fedapay.com` (des timeouts réseau peuvent faire échouer la création de transaction).
+
+---
+
 ## Emails
 
 Tous les emails partent en **file d'attente** (`QUEUE_CONNECTION=database`) — penser à lancer `php artisan queue:work`.

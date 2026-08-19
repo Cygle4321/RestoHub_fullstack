@@ -52,6 +52,7 @@ class SettingsController extends Controller
         }
 
         $restaurant->update($data);
+        $restaurant->clearStoreCache();
 
         return response()->json($restaurant->fresh('plan', 'activeSubscription'));
     }

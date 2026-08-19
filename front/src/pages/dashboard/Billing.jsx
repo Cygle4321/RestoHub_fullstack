@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Check, Download, ExternalLink, Loader } from "lucide-react";
 import { Badge, Button, Card, CardHeader, Modal, Spinner, Table, Td, useToast } from "../../components/ui";
 import { fmt } from "../../lib/mappers";
@@ -38,11 +39,26 @@ export default function Billing() {
     setRestricted(!!billingRes.restricted);
   };
 
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         await load();
+        if (!cancelled) {
+          const returnStatus = (searchParams.get("status") || "").toLowerCase();
+          if (searchParams.get("tx")) {
+            if (returnStatus === "approved") {
+              toast("Paiement confirmé ! Votre abonnement est actif.", "success");
+            } else if (["declined", "cancelled", "failed"].includes(returnStatus)) {
+              toast("Le paiement n'a pas abouti. Vous pouvez réessayer.", "error");
+            } else {
+              toast("Paiement en attente de confirmation…", "info");
+            }
+            window.history.replaceState({}, "", window.location.pathname);
+          }
+        }
       } catch {
         if (!cancelled) toast("Erreur de chargement de la facturation", "error");
       } finally {
@@ -58,9 +74,10 @@ export default function Billing() {
     try {
       const res = await restaurantApi.subscribe(plan.id, "monthly");
       if (res.checkout_url) {
-        window.open(res.checkout_url, "_blank");
-        toast("Redirection vers le paiement FedaPay…", "info");
-      } else if (res.error) {
+        window.location.href = res.checkout_url;
+        return;
+      }
+      if (res.error) {
         toast(res.error, "error");
       } else {
         toast(`Plan « ${plan.name} » sélectionné`);

@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Subscription;
+use App\Notifications\NewOrderNotification;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -67,6 +69,9 @@ class FedaPayService
             'method' => $order->payment_method,
         ]);
 
+        $country = $customer['country']
+            ?? config('fedapay.phone_country', 'bj');
+
         $payload = [
             'description' => 'Commande '.$order->number,
             'amount' => $order->total,
@@ -77,10 +82,8 @@ class FedaPayService
                 'lastname' => $customer['lastname'] ?? '',
                 'email' => $customer['email'] ?? $order->customer_email ?? 'client@example.com',
                 'phone_number' => [
-                    'number' => $this->normalizePhone($order->customer_phone),
-                    'country' => $customer['country']
-                        ?? $this->countryForPhone($order->customer_phone)
-                        ?? config('fedapay.phone_country', 'ci'),
+                    'number' => $this->normalizePhone($order->customer_phone, $country),
+                    'country' => $country,
                 ],
             ],
             'custom_metadata' => [
@@ -158,6 +161,8 @@ class FedaPayService
             'status' => 'pending',
         ]);
 
+        $country = $customer['country'] ?? config('fedapay.phone_country', 'bj');
+
         $payload = [
             'description' => 'Abonnement RestoHub #'.$subscription->id,
             'amount' => $subscription->amount,
@@ -168,8 +173,8 @@ class FedaPayService
                 'lastname' => $customer['lastname'] ?? '',
                 'email' => $customer['email'] ?? 'owner@example.com',
                 'phone_number' => [
-                    'number' => $this->normalizePhone($customer['phone'] ?? ''),
-                    'country' => $customer['country'] ?? 'bj',
+                    'number' => $this->normalizePhone($customer['phone'] ?? '', $country),
+                    'country' => $country,
                 ],
             ],
             'custom_metadata' => [
@@ -320,19 +325,7 @@ class FedaPayService
                 $order->update(['payment_status' => 'paid']);
             }
             if ($payment->subscription_id) {
-                $sub = $payment->subscription;
-                $sub->update([
-                    'status' => 'active',
-                    'starts_at' => $sub->starts_at ?? now(),
-                    'ends_at' => ($sub->billing_cycle === 'yearly')
-                        ? now()->addYear()
-                        : now()->addMonth(),
-                ]);
-                $sub->restaurant?->update([
-                    'status' => 'active',
-                    'plan_id' => $sub->plan_id,
-                    'subscription_ends_at' => $sub->ends_at,
-                ]);
+                $this->activateSubscription($payment);
             }
         }
 
@@ -343,40 +336,110 @@ class FedaPayService
         return $payment->fresh();
     }
 
-    protected function normalizePhone(string $phone): string
+    /**
+     * Active un abonnement après confirmation du paiement (webhook ou
+     * retour navigateur). Clôture les autres abonnements actifs du
+     * restaurant (changement de plan depuis la facturation) puis met à
+     * jour le restaurant. Idempotent : relancer la méthode est sans effet
+     * de bord sur un abonnement déjà actif.
+     */
+    public function activateSubscription(Payment $payment): void
+    {
+        $sub = $payment->subscription;
+
+        if (! $sub || $sub->status === 'active') {
+            return;
+        }
+
+        Subscription::where('restaurant_id', $sub->restaurant_id)
+            ->where('id', '!=', $sub->id)
+            ->where('status', 'active')
+            ->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+                'ends_at' => now(),
+            ]);
+
+        $sub->update([
+            'status' => 'active',
+            'starts_at' => $sub->starts_at ?? now(),
+            'ends_at' => ($sub->billing_cycle === 'yearly')
+                ? now()->addYear()
+                : now()->addMonth(),
+        ]);
+        $sub->restaurant?->update([
+            'status' => 'active',
+            'plan_id' => $sub->plan_id,
+            'subscription_ends_at' => $sub->ends_at,
+        ]);
+    }
+
+    /**
+     * Actions déclenchées une seule fois lorsqu'un paiement est approuvé :
+     * notification équipe (commande), email client (commande),
+     * notification super-admins (abonnement).
+     */
+    public function confirmPayment(Payment $payment): void
+    {
+        if ($payment->order_id) {
+            $order = $payment->order;
+            if (! $order || $order->payment_status !== 'paid') {
+                return;
+            }
+
+            app(RestaurantNotifier::class)->notify(
+                $order->restaurant,
+                new NewOrderNotification([
+                    'id' => $order->id,
+                    'number' => $order->number,
+                    'customer_name' => $order->customer_name,
+                    'total' => $order->total,
+                    'mode' => $order->mode,
+                ]),
+                'order'
+            );
+
+            if ($order->customer_email) {
+                try {
+                    $frontendUrl = (string) env('FRONTEND_URL', 'http://localhost:5173');
+                    $slug = $order->restaurant?->slug ?? 'le-saveur-dor';
+                    \Illuminate\Support\Facades\Mail::to($order->customer_email)->send(
+                        new OrderConfirmationMail(
+                            $order->load('restaurant', 'items'),
+                            $frontendUrl.'/store/'.$slug
+                        )
+                    );
+                } catch (\Throwable $e) {
+                    Log::warning('Email de confirmation (FedaPay) échoué', ['order' => $order->id, 'error' => $e->getMessage()]);
+                }
+            }
+        }
+
+        if ($payment->subscription_id && $payment->subscription) {
+            $sub = $payment->subscription;
+            app(AdminNotifier::class)->notify([
+                'kind' => 'subscription',
+                'subscription_id' => $sub->id,
+                'plan_name' => $sub->plan?->name,
+                'restaurant_name' => $sub->restaurant?->name ?? '—',
+                'amount' => $sub->amount,
+            ]);
+        }
+    }
+
+    protected function normalizePhone(string $phone, ?string $country = null): string
     {
         $digits = preg_replace('/\D+/', '', $phone) ?? '';
 
         // FedaPay valide le numéro national (sans indicatif pays). On retire
-        // l'indicatif du pays configuré si présent (+225/225 → 07xxxxxxxx).
-        $dial = $this->countryDial(config('fedapay.phone_country', 'ci'));
-        if ($dial && str_starts_with($digits, $dial)) {
-            $digits = substr($digits, strlen($dial));
-        }
-
-        return $digits;
-    }
-
-    protected function countryDial(string $country): ?string
-    {
-        return [
-            'ci' => '225',
-            'bj' => '229',
-            'sn' => '221',
-            'tg' => '228',
-            'ml' => '223',
-        ][strtolower($country)] ?? null;
-    }
-
-    protected function countryForPhone(string $phone): ?string
-    {
-        $digits = preg_replace('/\D+/', '', $phone) ?? '';
-        foreach (['bj' => '229', 'ci' => '225', 'sn' => '221', 'tg' => '228', 'ml' => '223'] as $code => $dial) {
+        // n'importe quel indicatif de pays connu (229/225/221/228/223).
+        foreach (['229', '225', '221', '228', '223'] as $dial) {
             if (str_starts_with($digits, $dial)) {
-                return $code;
+                $digits = substr($digits, strlen($dial));
+                break;
             }
         }
 
-        return null;
+        return $digits;
     }
 }

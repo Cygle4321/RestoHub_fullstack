@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bike, Store, Smartphone, CreditCard, Banknote, ShoppingBag, Loader2 } from "lucide-react";
+import { Bike, Store, Smartphone, CreditCard, Banknote, ShoppingBag, Loader2, CheckCircle2 } from "lucide-react";
 import { Card, CardHeader, Button, Input, Textarea, Select, EmptyState, useToast } from "../../components/ui";
 import { useCart } from "../../store/CartContext";
 import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
 import { fmt } from "../../lib/mappers";
+import { computeDiscount } from "../../lib/discount";
 
 export default function Checkout() {
   const { slug, zones } = useStore();
@@ -14,6 +15,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const promoCode = state?.promoCode || "";
+  const promo = state?.promo || null;
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -28,6 +30,10 @@ export default function Checkout() {
   const [cardCvc, setCardCvc] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!zone && zones.length > 0) setZone(zones[0].id);
+  }, [zones, zone]);
 
   if (items.length === 0) {
     return (
@@ -44,7 +50,9 @@ export default function Checkout() {
 
   const selectedZone = zones.find((z) => z.id === zone);
   const deliveryFee = mode === "Livraison" ? selectedZone?.fee ?? 0 : 0;
-  const grandTotal = total + deliveryFee;
+  const freeDelivery = promo?.type === "free_delivery" && mode === "Livraison";
+  const discount = computeDiscount(promo, total, deliveryFee);
+  const grandTotal = Math.max(0, total + deliveryFee - discount);
 
   const validate = () => {
     const e = {};
@@ -242,6 +250,15 @@ export default function Checkout() {
           <Card>
             <CardHeader title="Résumé de la commande" />
             <div className="space-y-2 p-5 text-sm">
+              {promo && (
+                <div className="mb-1 flex items-center justify-between rounded-lg bg-success-50 px-3 py-2 text-xs font-semibold text-success-700 ring-1 ring-inset ring-success-200">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 size={14} /> Code promo {promo.code} appliqué
+                  </span>
+                  {promo.type === "percent" && <span>−{promo.value}%</span>}
+                  {promo.type === "fixed" && <span>−{fmt(promo.value)}</span>}
+                </div>
+              )}
               {items.map((it) => (
                 <div key={it.id} className="flex justify-between gap-2">
                   <span className="text-zinc-600">{it.qty} × {it.name}</span>
@@ -252,12 +269,20 @@ export default function Checkout() {
                 <span className="text-zinc-500">Sous-total</span>
                 <span className="font-medium text-zinc-900">{fmt(total)}</span>
               </div>
+              {promo && discount > 0 && (
+                <div className="flex justify-between text-success-600">
+                  <span className="font-medium">Remise ({promo.code})</span>
+                  <span className="font-bold">−{fmt(discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-zinc-500">Livraison</span>
-                <span className="font-medium text-zinc-900">{mode === "Retrait" ? "Offerte" : fmt(deliveryFee)}</span>
+                <span className="font-medium text-zinc-900">
+                  {mode === "Retrait" || freeDelivery ? "Offerte" : fmt(deliveryFee)}
+                </span>
               </div>
               <div className="flex justify-between border-t border-zinc-100 pt-3 text-base">
-                <span className="font-bold text-zinc-900">Total</span>
+                <span className="font-bold text-zinc-900">Total à payer</span>
                 <span className="font-extrabold text-primary-600">{fmt(grandTotal)}</span>
               </div>
               <Button className="mt-3 w-full" onClick={submit} disabled={loading}>

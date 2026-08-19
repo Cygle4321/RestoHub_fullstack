@@ -37,7 +37,17 @@ class FedaPayWebhookController extends Controller
         $payload = $request->all();
         Log::info('FedaPay webhook received', ['keys' => array_keys($payload)]);
 
+        // On mémorise l'état du paiement pour ne notifier qu'une seule fois
+        // (le webhook POST et le retour GET peuvent tous deux arriver).
+        $txId = (string) ($payload['id'] ?? $payload['entity']['id'] ?? $payload['transaction']['id'] ?? $payload['data']['id'] ?? '');
+        $existing = Payment::where('provider', 'fedapay')->where('provider_ref', $txId)->first();
+        $wasPaid = $existing?->order?->payment_status === 'paid';
+
         $payment = $fedaPay->handleWebhook($payload);
+
+        if ($payment && $payment->status === 'approved' && ! $wasPaid) {
+            $fedaPay->confirmPayment($payment);
+        }
 
         return response()->json([
             'ok' => true,
@@ -49,50 +59,72 @@ class FedaPayWebhookController extends Controller
     /**
      * FedaPay redirige le navigateur du client ici (GET) une fois le
      * règlement terminé. On vérifie le statut réel auprès de l'API puis
-     * on redirige vers la page de confirmation de la boutique.
+     * on redirige vers la page adaptée : confirmation de commande pour la
+     * boutique, page de facturation pour un abonnement SaaS.
      */
     protected function handleReturn(Request $request, FedaPayService $fedaPay)
     {
         $txId = (string) ($request->query('id') ?? '');
         $statusFromUrl = strtolower((string) ($request->query('status') ?? 'pending'));
 
-        $slug = null;
-        $orderNumber = null;
         $payment = Payment::where('provider', 'fedapay')
             ->where('provider_ref', $txId)
             ->first();
 
-        if ($payment) {
-            $order = $payment->order;
-            $orderNumber = $order?->number;
-            $slug = $order?->restaurant?->slug;
-        }
-
         // Toujours vérifier le statut réel auprès de FedaPay (ne pas se
         // fier uniquement au paramètre de l'URL).
+        $realStatus = $statusFromUrl;
         if ($txId !== '') {
             $remote = $fedaPay->getTransaction($txId);
             $realStatus = strtolower((string) ($remote['status'] ?? $statusFromUrl));
-            if ($payment && $realStatus !== $payment->status) {
-                $payment->update([
-                    'status' => $realStatus,
-                    'paid_at' => $realStatus === 'approved' ? now() : $payment->paid_at,
+        }
+
+        if ($payment && $realStatus !== $payment->status) {
+            $wasPaid = $payment->order?->payment_status === 'paid'
+                || $payment->subscription?->status === 'active';
+
+            $payment->update([
+                'status' => $realStatus,
+                'paid_at' => $realStatus === 'approved' ? now() : $payment->paid_at,
+            ]);
+
+            if ($payment->order) {
+                $payment->order->update([
+                    'payment_status' => $realStatus === 'approved'
+                        ? 'paid'
+                        : ($realStatus === 'pending' ? 'pending' : 'failed'),
                 ]);
-                if ($payment->order) {
-                    $payment->order->update([
-                        'payment_status' => $realStatus === 'approved' ? 'paid' : ($realStatus === 'pending' ? 'pending' : 'failed'),
+            }
+
+            if ($payment->subscription) {
+                if ($realStatus === 'approved') {
+                    $fedaPay->activateSubscription($payment);
+                } elseif (in_array($realStatus, ['declined', 'cancelled'], true)) {
+                    $payment->subscription->update([
+                        'status' => 'cancelled',
+                        'cancelled_at' => now(),
                     ]);
                 }
+            }
+
+            if ($realStatus === 'approved' && ! $wasPaid) {
+                $fedaPay->confirmPayment($payment->fresh());
             }
         }
 
         $frontend = rtrim((string) config('app.frontend_url', 'http://localhost:5173'), '/');
-        $storeSlug = $slug ?? 'le-saveur-dor';
-        $url = "{$frontend}/store/{$storeSlug}/confirmation";
 
-        $query = ['tx' => $txId, 'status' => $statusFromUrl];
-        if ($orderNumber) {
-            $query['number'] = $orderNumber;
+        if ($payment?->subscription_id) {
+            $url = $frontend.'/dashboard/billing';
+        } else {
+            $order = $payment?->order;
+            $slug = $order?->restaurant?->slug ?? 'le-saveur-dor';
+            $url = $frontend.'/store/'.$slug.'/confirmation';
+        }
+
+        $query = ['tx' => $txId, 'status' => $realStatus];
+        if ($payment?->order?->number) {
+            $query['number'] = $payment->order->number;
         }
 
         return redirect()->away($url.'?'.http_build_query($query));

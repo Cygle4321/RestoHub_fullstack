@@ -42,6 +42,15 @@ export const storeApi = {
     };
   },
 
+  /** Vérifie un code promo pour un panier (sous-total + mode) */
+  verifyPromo: async (slug, { code, subtotal, mode }) => {
+    return apiClient.post(
+      `/store/${slug}/promo/verify`,
+      { code, subtotal, mode: mode === "Retrait" ? "retrait" : "livraison" },
+      { auth: false }
+    );
+  },
+
   track: async (slug, number, phone) => {
     const q = new URLSearchParams({ number, phone }).toString();
     return mapOrder(await apiClient.get(`/store/${slug}/track?${q}`, { auth: false }));

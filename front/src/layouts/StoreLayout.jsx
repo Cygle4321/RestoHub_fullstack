@@ -4,7 +4,6 @@ import { ShoppingBag, Clock, MapPin, Search, Menu as MenuIcon, X, Phone, Store }
 import { EmptyState } from "../components/ui";
 import { StoreProvider, useStore, initialsOf } from "../store/StoreContext";
 import { useCart } from "../store/CartContext";
-import { fmt } from "../lib/mappers";
 
 export default function StoreLayout() {
   return (
@@ -15,7 +14,7 @@ export default function StoreLayout() {
 }
 
 function StoreLayoutInner() {
-  const { items, isSidebarOpen, setSidebarOpen, total } = useCart();
+  const { items } = useCart();
   const { slug, error, restaurant, todayHours } = useStore();
   const navigate = useNavigate();
   const count = items.reduce((s, x) => s + x.qty, 0);
@@ -131,7 +130,7 @@ function StoreLayoutInner() {
           </form>
 
           <button
-            onClick={() => setSidebarOpen(true)}
+            onClick={() => navigate(`/store/${slug}/cart`)}
             className="relative ml-auto flex items-center gap-2 rounded-full bg-primary-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-600 md:ml-0"
           >
             <ShoppingBag size={16} strokeWidth={2} />
@@ -167,10 +166,10 @@ function StoreLayoutInner() {
       </footer>
 
       {/* Mobile sticky cart bar */}
-      {count > 0 && !isSidebarOpen && (
+      {count > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-30 p-3 md:hidden">
           <button
-            onClick={() => setSidebarOpen(true)}
+            onClick={() => navigate(`/store/${slug}/cart`)}
             className="flex w-full items-center justify-between rounded-2xl bg-zinc-900 px-5 py-4 text-white shadow-float"
           >
             <span className="flex items-center gap-2.5 text-sm font-semibold">
@@ -185,56 +184,6 @@ function StoreLayoutInner() {
       )}
 
       {/* Cart Sidebar */}
-      {isSidebarOpen && (
-        <>
-          <div className="fixed inset-0 z-40 bg-zinc-900/40 backdrop-blur-[2px]" onClick={() => setSidebarOpen(false)} />
-          <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col bg-white shadow-2xl transition-transform duration-300">
-            <div className="flex items-center justify-between border-b border-zinc-100 p-4">
-              <h2 className="text-lg font-bold text-zinc-900">Votre panier</h2>
-              <button onClick={() => setSidebarOpen(false)} className="rounded-full p-2 text-zinc-500 hover:bg-zinc-100">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              {items.length === 0 ? (
-                <div className="flex h-full flex-col items-center justify-center text-zinc-400">
-                  <ShoppingBag size={48} className="mb-4 opacity-50" />
-                  <p>Votre panier est vide</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex gap-4 border-b border-zinc-50 pb-4">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-zinc-900">{item.name}</h4>
-                        <p className="text-sm font-medium text-primary-600">{fmt(item.price)}</p>
-                        <div className="mt-2 flex items-center gap-3">
-                          <span className="text-sm text-zinc-500">Qté: {item.qty}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            {items.length > 0 && (
-              <div className="border-t border-zinc-100 bg-zinc-50 p-4">
-                <div className="mb-4 flex items-center justify-between text-lg font-bold text-zinc-900">
-                  <span>Total</span>
-                  <span>{fmt(total)}</span>
-                </div>
-                <Link
-                  to={`/store/${slug}/cart`}
-                  onClick={() => setSidebarOpen(false)}
-                  className="flex w-full items-center justify-center rounded-xl bg-primary-500 py-3.5 text-sm font-bold text-white transition hover:bg-primary-600"
-                >
-                  Passer la commande
-                </Link>
-              </div>
-            )}
-          </div>
-        </>
-      )}
     </div>
   );
 }

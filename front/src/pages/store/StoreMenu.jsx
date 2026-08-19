@@ -14,7 +14,7 @@ export default function StoreMenu() {
   const [cat, setCat] = useState("Tout");
   const [query, setQuery] = useState(initialQuery);
   const appliedCat = useRef(false);
-  const { add, setSidebarOpen } = useCart();
+  const { add } = useCart();
   const toast = useToast();
 
   useEffect(() => {
@@ -34,7 +34,6 @@ export default function StoreMenu() {
 
   const handleAdd = (product) => {
     add(product, 1);
-    setSidebarOpen(true);
     toast("Ajouté au panier");
   };
 
@@ -91,7 +90,7 @@ export default function StoreMenu() {
               <Link to={`/store/${slug}/product/${p.id}`} className="block">
                 <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br from-primary-50 to-orange-50 text-primary-300 transition group-hover:from-primary-100 group-hover:to-orange-100">
                   {p.image ? (
-                    <img src={p.image} alt={p.name} className="h-full w-full object-cover transition group-hover:scale-105" />
+                    <img src={p.image} alt={p.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition group-hover:scale-105" />
                   ) : (
                     <UtensilsCrossed size={32} strokeWidth={1.25} />
                   )}

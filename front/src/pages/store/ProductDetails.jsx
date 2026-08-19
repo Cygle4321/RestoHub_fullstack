@@ -80,7 +80,7 @@ export default function ProductDetails() {
 
       {/* Photo */}
       {product.image ? (
-        <img src={product.image} alt={product.name} className="h-48 w-full rounded-xl object-cover md:h-64" />
+        <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="h-48 w-full rounded-xl object-cover md:h-64" />
       ) : (
         <div className="flex h-48 items-center justify-center rounded-xl bg-primary-50 text-primary-400 md:h-64">
           <UtensilsCrossed size={56} />

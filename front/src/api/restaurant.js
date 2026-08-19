@@ -95,6 +95,19 @@ export const restaurantApi = {
   drivers: () => apiClient.get("/restaurant/delivery/drivers"),
   createDriver: (body) => apiClient.post("/restaurant/delivery/drivers", body),
   updateDriver: (id, body) => apiClient.put(`/restaurant/delivery/drivers/${id}`, body),
+  pendingDelivery: async () => {
+    const data = await apiClient.get("/restaurant/delivery/pending");
+    const list = data.data || data;
+    return Array.isArray(list) ? list.map(mapOrder) : list;
+  },
+  assignDriver: async (orderId, driverId) => {
+    const data = await apiClient.post(`/restaurant/delivery/orders/${orderId}/assign`, { driver_id: driverId });
+    return mapOrder(data.order || data);
+  },
+  unassignDriver: async (orderId) => {
+    const data = await apiClient.post(`/restaurant/delivery/orders/${orderId}/unassign`);
+    return mapOrder(data.order || data);
+  },
 
   // Promotions
   promotions: () => apiClient.get("/restaurant/promotions"),

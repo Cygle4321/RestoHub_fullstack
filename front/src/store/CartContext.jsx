@@ -5,7 +5,6 @@ const CartContext = createContext(null);
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [count, setCount] = useState(0);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const value = useMemo(() => {
     const add = (product, qty = 1) => {
@@ -29,8 +28,8 @@ export function CartProvider({ children }) {
     };
     const clear = () => setItems([]);
     const total = items.reduce((s, x) => s + x.price * x.qty, 0);
-    return { items, add, remove, setQty, clear, total, count, isSidebarOpen, setSidebarOpen };
-  }, [items, count, isSidebarOpen]);
+    return { items, add, remove, setQty, clear, total, count };
+  }, [items, count]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

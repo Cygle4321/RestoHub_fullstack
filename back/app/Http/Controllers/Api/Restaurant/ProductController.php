@@ -63,6 +63,7 @@ class ProductController extends Controller
         $data['image'] = app(ImageStorage::class)->store($data['image'] ?? null, 'products');
 
         $product = Product::create($data);
+        $restaurant->clearStoreCache();
 
         return response()->json($product->load('category'), 201);
     }
@@ -100,6 +101,7 @@ class ProductController extends Controller
         }
 
         $product->update($data);
+        $product->restaurant?->clearStoreCache();
 
         return response()->json($product->fresh('category'));
     }
@@ -107,6 +109,7 @@ class ProductController extends Controller
     public function destroy(Request $request, Product $product)
     {
         $this->authorizeRestaurant($request, $product);
+        $product->restaurant?->clearStoreCache();
         $product->delete();
 
         return response()->json(['message' => 'Produit supprimé.']);

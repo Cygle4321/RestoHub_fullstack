@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\Plan;
 use App\Models\Product;
+use App\Models\Promotion;
 use App\Models\Restaurant;
 use App\Models\Subscription;
 use App\Models\User;
@@ -95,6 +96,46 @@ class DatabaseSeeder extends Seeder
             'amount' => $business->price_monthly,
             'starts_at' => now()->subMonth(),
             'ends_at' => now()->addMonth(),
+        ]);
+
+        // Codes promo de démonstration
+        Promotion::create([
+            'restaurant_id' => $restaurant->id,
+            'code' => 'PROMO10',
+            'type' => 'percent',
+            'value' => 10,
+            'min_order' => 5000,
+            'usage_limit' => 500,
+            'usage_count' => 0,
+            'starts_at' => null,
+            'ends_at' => null,
+            'is_active' => true,
+        ]);
+
+        Promotion::create([
+            'restaurant_id' => $restaurant->id,
+            'code' => 'WELCOME5',
+            'type' => 'fixed',
+            'value' => 500,
+            'min_order' => 0,
+            'usage_limit' => 300,
+            'usage_count' => 0,
+            'starts_at' => null,
+            'ends_at' => null,
+            'is_active' => true,
+        ]);
+
+        Promotion::create([
+            'restaurant_id' => $restaurant->id,
+            'code' => 'LIVRAISON',
+            'type' => 'free_delivery',
+            'value' => 0,
+            'min_order' => 0,
+            'usage_limit' => null,
+            'usage_count' => 0,
+            'starts_at' => null,
+            'ends_at' => null,
+            'is_active' => true,
         ]);
 
         $cats = ['Entrées', 'Grillades', 'Plats traditionnels', 'Boissons', 'Desserts'];

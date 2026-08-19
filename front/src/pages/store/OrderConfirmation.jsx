@@ -12,12 +12,16 @@ export default function OrderConfirmation() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  const tx =
+    searchParams.get("tx") ||
+    searchParams.get("id") ||
+    searchParams.get("transaction_id") ||
+    searchParams.get("reference") ||
+    "";
   const [order, setOrder] = useState(state?.order || null);
   const [paymentStatus, setPaymentStatus] = useState("");
-  const [loading, setLoading] = useState(!state?.order && Boolean(searchParams.get("tx")));
+  const [loading, setLoading] = useState(!state?.order && Boolean(tx));
   const [error, setError] = useState(false);
-
-  const tx = searchParams.get("tx");
 
   useEffect(() => {
     if (order || !tx) return;

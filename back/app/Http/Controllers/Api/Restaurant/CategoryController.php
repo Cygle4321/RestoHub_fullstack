@@ -32,6 +32,7 @@ class CategoryController extends Controller
         $data['slug'] = Str::slug($data['name']);
 
         $category = Category::create($data);
+        \App\Models\Restaurant::find($restaurantId)?->clearStoreCache();
 
         return response()->json($category, 201);
     }
@@ -51,6 +52,7 @@ class CategoryController extends Controller
         }
 
         $category->update($data);
+        $category->restaurant?->clearStoreCache();
 
         return response()->json($category);
     }
@@ -58,6 +60,7 @@ class CategoryController extends Controller
     public function destroy(Request $request, Category $category)
     {
         abort_unless($category->restaurant_id === $request->user()->restaurant_id, 403);
+        $category->restaurant?->clearStoreCache();
         $category->delete();
 
         return response()->json(['message' => 'Catégorie supprimée.']);
