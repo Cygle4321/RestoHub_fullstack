@@ -123,6 +123,12 @@ export default function StoreHome() {
               {restaurant.is_open ? "Ouvert" : "Fermé"}
             </Badge>
           )}
+          {Number(restaurant.rating_count) > 0 && (
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-600">
+              <Star size={12} className="fill-amber-400 text-amber-400" />
+              {restaurant.rating_avg} · {restaurant.rating_count} avis
+            </span>
+          )}
           {firstZone && (
             <span className="inline-flex items-center gap-1 text-xs text-zinc-500">
               <Bike size={12} strokeWidth={2} /> Livraison {fmt(firstZone.fee)}

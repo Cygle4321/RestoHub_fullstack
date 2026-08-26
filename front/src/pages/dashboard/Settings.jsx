@@ -293,7 +293,7 @@ export default function Settings() {
           {tab === "Utilisateurs" && (
             <Card>
               <CardHeader title="Utilisateurs" subtitle="Les membres de votre équipe" action={<Button onClick={() => setInviteModal(true)}>Inviter</Button>} />
-              <Table headers={["Membre", "Email", "Rôle", "Statut"]}>
+              <Table headers={["Membre", "Email", "Rôle", "Statut", "Actions"]}>
                 {team.map((m) => (
                   <tr key={m.id} className="hover:bg-gray-50/60">
                     <Td>
@@ -326,15 +326,27 @@ export default function Settings() {
                     </Td>
                     <Td><Badge variant={m.is_active ? "success" : "warning"} dot>{m.is_active ? "Actif" : "Inactif"}</Badge></Td>
                     <Td>
-                      <Button variant="danger" className="!px-3 !py-1.5 !text-xs" onClick={async () => {
-                        try {
-                          await restaurantApi.removeTeamMember(m.id);
-                          setTeam(t => t.filter(x => x.id !== m.id));
-                          toast("Membre supprimé");
-                        } catch {
-                          toast("Erreur de suppression", "error");
-                        }
-                      }}>Retirer</Button>
+                      <div className="flex items-center gap-2">
+                        {m.role !== "owner" && (
+                          <Button variant="secondary" className="!px-3 !py-1.5 !text-xs" onClick={async () => {
+                            try {
+                              const res = await restaurantApi.resendTeamInvitation(m.id);
+                              toast(res?.message || "Invitation renvoyée");
+                            } catch (e) {
+                              toast(e?.message || "Erreur lors de l'envoi", "error");
+                            }
+                          }}>Renvoyer l'invitation</Button>
+                        )}
+                        <Button variant="danger" className="!px-3 !py-1.5 !text-xs" onClick={async () => {
+                          try {
+                            await restaurantApi.removeTeamMember(m.id);
+                            setTeam(t => t.filter(x => x.id !== m.id));
+                            toast("Membre supprimé");
+                          } catch {
+                            toast("Erreur de suppression", "error");
+                          }
+                        }}>Retirer</Button>
+                      </div>
                     </Td>
                   </tr>
                 ))}

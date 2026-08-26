@@ -44,12 +44,12 @@ export default function Landing() {
             <a href="#tarifs" className="hover:text-zinc-900">Tarifs</a>
             <a href="#temoignages" className="hover:text-zinc-900">Témoignages</a>
           </nav>
-          <div className="flex items-center gap-3">
-            <Link to="/login">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link to="/login" className="hidden sm:block">
               <Button variant="ghost">Se connecter</Button>
             </Link>
             <Link to="/register">
-              <Button>Créer ma boutique</Button>
+              <Button className="px-3 text-sm sm:px-4">Créer ma boutique</Button>
             </Link>
           </div>
         </div>

@@ -18,7 +18,8 @@ import {
   PageHeader,
 } from "../../components/ui";
 import { restaurantApi } from "../../api/restaurant";
-import { fmt } from "../../lib/mappers";
+import { fmt, orderStatusToApi } from "../../lib/mappers";
+import { waLink, orderWaText } from "../../lib/whatsapp";
 
 const orderStatuses = ["Nouvelle", "Confirmée", "En préparation", "Prête", "En livraison", "Livrée", "Annulée"];
 
@@ -65,6 +66,26 @@ export default function Orders() {
     loadOrders().finally(() => setRefreshing(false));
   };
 
+  const handleExport = async () => {
+    try {
+      await restaurantApi.exportOrders({
+        status: status === "Toutes" ? undefined : orderStatusToApi(status),
+        mode: MODE_TO_API[mode],
+        q: query || undefined,
+        date: date || undefined,
+      });
+      toast("Export CSV téléchargé", "success");
+    } catch (e) {
+      toast(e?.message || "Export impossible", "error");
+    }
+  };
+
+  const openWhatsApp = (e, o) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(waLink(o.customer?.phone, orderWaText(o)), "_blank", "noopener");
+  };
+
   const countFor = (s) =>
     s === "Toutes" ? orders.length : orders.filter((o) => o.status === s).length;
 
@@ -78,8 +99,8 @@ export default function Orders() {
             <Button variant="secondary" onClick={handleRefresh}>
               <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} /> Actualiser
             </Button>
-            <Button onClick={() => toast("Export des commandes en cours…", "info")}>
-              <Download size={16} strokeWidth={2} /> Exporter
+            <Button onClick={handleExport}>
+              <Download size={16} strokeWidth={2} /> Exporter CSV
             </Button>
           </div>
         }
@@ -165,13 +186,24 @@ export default function Orders() {
                 </Td>
                 <Td className="font-semibold text-zinc-900">{fmt(o.total)}</Td>
                 <Td>
-                  <Link
-                    to={`/dashboard/orders/${o._id ?? o.id}`}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-primary-50 hover:text-primary-600"
-                    title="Voir la commande"
-                  >
-                    <ArrowRight size={16} />
-                  </Link>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => openWhatsApp(e, o)}
+                      title={`WhatsApp ${o.customer?.name || ""}`}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-emerald-50 hover:text-emerald-600"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91A9.85 9.85 0 0 0 12.04 2Zm5.8 14.03c-.24.68-1.42 1.3-1.96 1.35-.5.05-.98.23-2.78-.58a10.4 10.4 0 0 1-4.28-3.77c-.31-.46-.53-1-.75-1.54-.22-.55-.33-1.07-.35-1.6-.02-.52.36-1.13.62-1.44.26-.31.57-.39.76-.4h.55c.18 0 .41-.06.63.48.23.56.79 1.94.86 2.08.07.14.11.3.02.49-.09.19-.19.34-.37.53-.18.19-.28.28-.4.48-.12.2-.02.4.09.58.11.19.61.99 1.3 1.6.89.79 1.63 1.04 1.87 1.16.24.12.38.1.52-.06.14-.16.6-.7.76-.94.16-.24.32-.2.54-.12.22.08 1.4.66 1.64.78.24.12.4.18.46.28.06.1.06.59-.18 1.27Z"/>
+                      </svg>
+                    </button>
+                    <Link
+                      to={`/dashboard/orders/${o._id ?? o.id}`}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-primary-50 hover:text-primary-600"
+                      title="Voir la commande"
+                    >
+                      <ArrowRight size={16} />
+                    </Link>
+                  </div>
                 </Td>
               </tr>
             ))}

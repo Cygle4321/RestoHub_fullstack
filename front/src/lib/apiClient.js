@@ -106,6 +106,32 @@ export const apiClient = {
   delete: (path, opts) => api(path, { ...opts, method: "DELETE" }),
 };
 
+/**
+ * Télécharge un fichier depuis l'API (CSV…) en conservant le token.
+ */
+export async function downloadFile(path, fallbackName = "export.csv") {
+  const url = path.startsWith("http") ? path : `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const headers = { Accept: "*/*" };
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const response = await fetch(url, { headers });
+  if (!response.ok) throw new ApiError(`Export impossible (erreur ${response.status}).`, response.status);
+
+  const blob = await response.blob();
+  const disposition = response.headers.get("content-disposition") || "";
+  const match = disposition.match(/filename="?([^";]+)"?/i);
+  const name = match ? match[1] : fallbackName;
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(link.href);
+}
+
 export function useMock() {
   return import.meta.env.VITE_USE_MOCK === "true";
 }

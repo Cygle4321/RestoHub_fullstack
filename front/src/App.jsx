@@ -19,6 +19,7 @@ const Onboarding = lazy(() => import("./pages/onboarding/Onboarding"));
 
 const DashboardHome = lazy(() => import("./pages/dashboard/DashboardHome"));
 const Orders = lazy(() => import("./pages/dashboard/Orders"));
+const Kitchen = lazy(() => import("./pages/dashboard/Kitchen"));
 const OrderDetails = lazy(() => import("./pages/dashboard/OrderDetails"));
 const Products = lazy(() => import("./pages/dashboard/Products"));
 const ProductForm = lazy(() => import("./pages/dashboard/ProductForm"));
@@ -97,6 +98,7 @@ const router = createBrowserRouter([
               { index: true, element: <DashboardHome /> },
               { path: "orders", element: <Orders /> },
               { path: "orders/:id", element: <OrderDetails /> },
+              { path: "kitchen", element: <Kitchen /> },
               { path: "products", element: <Products /> },
               { path: "products/new", element: <ProductForm /> },
               { path: "products/:id/edit", element: <ProductForm /> },

@@ -47,8 +47,16 @@ class StoreController extends Controller
                 ->where('is_active', true)
                 ->get();
 
+            // Note moyenne des avis clients (affichée sur la boutique)
+            $rating = \App\Models\Review::selectRaw('COALESCE(AVG(rating),0) as avg, COUNT(*) as count')
+                ->where('restaurant_id', $restaurant->id)
+                ->first();
+
             return [
-                'restaurant' => $restaurant->toArray(),
+                'restaurant' => array_merge($restaurant->toArray(), [
+                    'rating_avg' => round((float) $rating->avg, 1),
+                    'rating_count' => (int) $rating->count,
+                ]),
                 'categories' => $categories->toArray(),
                 'products' => $products->toArray(),
                 'delivery_zones' => $zones->toArray(),
@@ -159,11 +167,30 @@ class StoreController extends Controller
             'items.*.supplements' => ['nullable', 'array'],
         ]);
 
-        if ($data['mode'] === 'livraison' && empty($data['delivery_address'])) {
-            return response()->json(['message' => 'Adresse de livraison requise.'], 422);
+        $zone = null;
+        if ($data['mode'] === 'livraison') {
+            if (empty($data['delivery_address'])) {
+                return response()->json(['message' => 'Adresse de livraison requise.'], 422);
+            }
+
+            // Une commande livrée doit être rattachée à une zone valide dès
+            // lors que le restaurant en propose : sinon les frais seraient
+            // silencieusement à 0.
+            $zonesQuery = DeliveryZone::where('restaurant_id', $restaurant->id)
+                ->where('is_active', true);
+
+            if (! empty($data['delivery_zone_id'])) {
+                $zone = (clone $zonesQuery)->where('id', $data['delivery_zone_id'])->first();
+
+                if (! $zone) {
+                    return response()->json(['message' => 'Zone de livraison invalide.'], 422);
+                }
+            } elseif ($zonesQuery->exists()) {
+                return response()->json(['message' => 'La zone de livraison est requise.'], 422);
+            }
         }
 
-        $order = DB::transaction(function () use ($data, $restaurant) {
+        $order = DB::transaction(function () use ($data, $restaurant, $zone) {
             $subtotal = 0;
             $lineItems = [];
 
@@ -196,15 +223,9 @@ class StoreController extends Controller
 
             $deliveryFee = 0;
             $zoneName = null;
-            if ($data['mode'] === 'livraison' && ! empty($data['delivery_zone_id'])) {
-                $zone = DeliveryZone::where('restaurant_id', $restaurant->id)
-                    ->where('id', $data['delivery_zone_id'])
-                    ->where('is_active', true)
-                    ->first();
-                if ($zone) {
-                    $deliveryFee = $zone->fee;
-                    $zoneName = $zone->name;
-                }
+            if ($data['mode'] === 'livraison' && $zone) {
+                $deliveryFee = $zone->fee;
+                $zoneName = $zone->name;
             }
 
             $discount = 0;
@@ -438,5 +459,52 @@ class StoreController extends Controller
             ->firstOrFail();
 
         return response()->json($order);
+    }
+
+    /**
+     * Avis client laissé depuis la page de suivi, après une commande
+     * livrée. Vérifié par numéro de commande + téléphone.
+     */
+    public function storeReview(Request $request, string $slug)
+    {
+        $data = $request->validate([
+            'number' => ['required', 'string'],
+            'phone' => ['required', 'string'],
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'comment' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $restaurant = Restaurant::where('slug', $slug)->where('status', 'active')->firstOrFail();
+
+        $order = Order::where('restaurant_id', $restaurant->id)
+            ->where('number', strtoupper($data['number']))
+            ->where('customer_phone', $data['phone'])
+            ->firstOrFail();
+
+        if ($order->status !== 'livree') {
+            return response()->json([
+                'message' => "Vous pourrez noter cette commande une fois livrée.",
+            ], 422);
+        }
+
+        if (\App\Models\Review::where('order_id', $order->id)->exists()) {
+            return response()->json(['message' => 'Cette commande a déjà été notée.'], 422);
+        }
+
+        $review = \App\Models\Review::create([
+            'restaurant_id' => $restaurant->id,
+            'order_id' => $order->id,
+            'customer_name' => $order->customer_name,
+            'rating' => (int) $data['rating'],
+            'comment' => $data['comment'] ?? null,
+        ]);
+
+        // La note moyenne affichée sur la boutique vient d'être modifiée.
+        $restaurant->clearStoreCache();
+
+        return response()->json([
+            'message' => 'Merci pour votre avis !',
+            'review' => $review,
+        ], 201);
     }
 }

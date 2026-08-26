@@ -59,6 +59,8 @@ export function mapOrder(o) {
       name: it.name,
       qty: it.quantity ?? it.qty,
       price: it.unit_price ?? it.price,
+      options: it.options || [],
+      supplements: it.supplements || [],
     })),
     history: (o.status_history || o.history || []).map((h) => ({
       s: orderStatusToUi(h.s || h.status),

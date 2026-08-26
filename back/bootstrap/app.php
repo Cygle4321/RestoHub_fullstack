@@ -22,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscription' => EnsureSubscription::class,
         ]);
 
+        // API SPA : jamais de redirection vers une route "login" inexistante,
+        // toujours un 401 JSON pour les requêtes non authentifiées.
+        $middleware->redirectGuestsTo(fn (Request $request) => null);
+
         $middleware->api(prepend: [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ], append: [

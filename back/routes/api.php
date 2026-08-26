@@ -14,10 +14,12 @@ use App\Http\Controllers\Api\Restaurant\CategoryController;
 use App\Http\Controllers\Api\Restaurant\CustomerController;
 use App\Http\Controllers\Api\Restaurant\DashboardController;
 use App\Http\Controllers\Api\Restaurant\DeliveryController;
+use App\Http\Controllers\Api\Restaurant\ExportController;
 use App\Http\Controllers\Api\Restaurant\NotificationController;
 use App\Http\Controllers\Api\Restaurant\OrderController;
 use App\Http\Controllers\Api\Restaurant\ProductController;
 use App\Http\Controllers\Api\Restaurant\PromotionController;
+use App\Http\Controllers\Api\Restaurant\SearchController;
 use App\Http\Controllers\Api\Restaurant\SettingsController;
 use App\Http\Controllers\Api\Restaurant\SupportController;
 use App\Http\Controllers\Api\Restaurant\TeamController;
@@ -67,6 +69,7 @@ Route::prefix('store/{slug}')->group(function () {
     Route::post('checkout', [StoreController::class, 'checkout']);
     Route::post('promo/verify', [StoreController::class, 'verifyPromo']);
     Route::get('track', [StoreController::class, 'track']);
+    Route::post('reviews', [StoreController::class, 'storeReview']);
     Route::get('payment/{transactionId}', [StoreController::class, 'payment']);
 });
 
@@ -76,10 +79,14 @@ Route::middleware(['auth:sanctum', 'role:owner,staff', 'restaurant', 'subscripti
     ->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
 
+        // Recherche globale (header dashboard)
+        Route::get('search', SearchController::class);
+
         // Orders
         Route::get('orders', [OrderController::class, 'index']);
         Route::get('orders/{order}', [OrderController::class, 'show']);
         Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
+        Route::get('orders-export', [ExportController::class, 'orders']);
 
         // Products
         Route::apiResource('products', ProductController::class);
@@ -93,6 +100,7 @@ Route::middleware(['auth:sanctum', 'role:owner,staff', 'restaurant', 'subscripti
         // Customers
         Route::get('customers', [CustomerController::class, 'index']);
         Route::get('customers/{customer}', [CustomerController::class, 'show']);
+        Route::get('customers-export', [ExportController::class, 'customers']);
 
         // Delivery
         Route::get('delivery/zones', [DeliveryController::class, 'zones']);
@@ -119,6 +127,7 @@ Route::middleware(['auth:sanctum', 'role:owner,staff', 'restaurant', 'subscripti
         
         // Team
         Route::apiResource('team', TeamController::class)->except(['create', 'edit', 'show']);
+        Route::post('team/{id}/resend-invitation', [TeamController::class, 'resend']);
         
         // Security
         Route::put('security/password', [SecurityController::class, 'updatePassword']);

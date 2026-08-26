@@ -1,0 +1,24 @@
+{
+  "name": "RestoHub — Commandes en ligne",
+  "short_name": "RestoHub",
+  "description": "Boutique en ligne et gestion pour restaurants : commandes, cuisine, livraison.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f7f8",
+  "theme_color": "#14b8a6",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

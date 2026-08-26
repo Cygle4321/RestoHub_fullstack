@@ -86,6 +86,11 @@ class Restaurant extends Model
         return $this->hasOne(Subscription::class)->whereIn('status', ['active', 'trialing'])->latestOfMany();
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

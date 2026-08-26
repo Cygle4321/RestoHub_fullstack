@@ -4,6 +4,7 @@ import { ArrowLeft, CheckCircle2, CreditCard, MapPin, Phone, Printer, XCircle, X
 import { Avatar, Badge, Button, Card, CardHeader, Modal, Spinner, statusVariant, useToast } from "../../components/ui";
 import { fmt } from "../../lib/mappers";
 import { downloadOrderPdf } from "../../lib/documents";
+import { waLink, orderWaText } from "../../lib/whatsapp";
 import { useAuth } from "../../context/AuthContext";
 import { restaurantApi } from "../../api/restaurant";
 
@@ -86,9 +87,19 @@ export default function OrderDetails() {
                 {(order.items || []).map((it, i) => {
                   const unitPrice = it.price ?? 0;
                   return (
-                    <li key={`${it.name}-${i}`} className="flex items-center justify-between px-4 py-3">
-                      <p className="text-sm text-zinc-800"><span className="font-semibold text-zinc-900">{it.qty}×</span> {it.name}</p>
-                      <p className="text-sm font-medium text-zinc-900">{fmt(unitPrice * it.qty)}</p>
+                    <li key={`${it.name}-${i}`} className="px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-zinc-800"><span className="font-semibold text-zinc-900">{it.qty}×</span> {it.name}</p>
+                        <p className="text-sm font-medium text-zinc-900">{fmt(unitPrice * it.qty)}</p>
+                      </div>
+                      {((it.options?.length || 0) > 0 || (it.supplements?.length || 0) > 0) && (
+                        <p className="mt-0.5 text-xs text-zinc-400">
+                          {[
+                            ...(it.options || []).map((o) => `${o.name}: ${o.choice}`),
+                            ...(it.supplements || []).map((s) => `+ ${s.name}`),
+                          ].join(" · ")}
+                        </p>
+                      )}
                     </li>
                   );
                 })}
@@ -107,6 +118,14 @@ export default function OrderDetails() {
                     <p className="text-sm font-semibold text-zinc-900">{order.customer?.name}</p>
                     <p className="mt-1 flex items-center gap-1.5 text-xs text-zinc-500"><Phone size={12} /> {order.customer?.phone}</p>
                     {order.address !== "—" && <p className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-500"><MapPin size={12} /> {order.address}</p>}
+                    <a
+                      href={waLink(order.customer?.phone, orderWaText(order))}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-100"
+                    >
+                      Contacter sur WhatsApp
+                    </a>
                   </div>
                 </div>
                 <div className="space-y-2 text-sm">

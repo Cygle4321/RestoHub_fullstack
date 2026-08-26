@@ -57,8 +57,18 @@ export default function AdminLayout() {
 
   useEffect(() => {
     loadNotifications();
-    const t = setInterval(loadNotifications, 20000);
-    return () => clearInterval(t);
+    // Polling intelligent : en pause quand l'onglet est masqué
+    const t = setInterval(() => {
+      if (!document.hidden) loadNotifications();
+    }, 20000);
+    const onVisible = () => {
+      if (!document.hidden) loadNotifications();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [loadNotifications]);
 
   const markAllRead = async () => {
@@ -229,7 +239,7 @@ export default function AdminLayout() {
               {showNotifications && (
                 <>
                   <div className="fixed inset-0 z-20" onClick={() => setShowNotifications(false)} />
-                  <div className="absolute right-0 top-full z-30 mt-2 w-80 rounded-2xl border border-zinc-100 bg-white p-3 shadow-xl">
+                  <div className="absolute right-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-zinc-100 bg-white p-3 shadow-xl">
                     <div className="mb-2 flex items-center justify-between px-2 pt-1">
                       <h3 className="text-sm font-bold text-zinc-900">Notifications</h3>
                       <button

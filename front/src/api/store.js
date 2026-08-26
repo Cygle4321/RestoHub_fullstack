@@ -56,6 +56,15 @@ export const storeApi = {
     return mapOrder(await apiClient.get(`/store/${slug}/track?${q}`, { auth: false }));
   },
 
+  /** Avis client après livraison (vérifié par numéro + téléphone) */
+  addReview: async (slug, { number, phone, rating, comment }) => {
+    return apiClient.post(
+      `/store/${slug}/reviews`,
+      { number, phone, rating, comment },
+      { auth: false }
+    );
+  },
+
   /** Récupère la commande associée à une transaction FedaPay (retour callback) */
   paymentStatus: async (slug, transactionId) => {
     const data = await apiClient.get(`/store/${slug}/payment/${transactionId}`, { auth: false });

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Heart, UserPlus, Users as UsersIcon } from "lucide-react";
-import { Avatar, Card, CardHeader, EmptyState, SearchInput, StatCard, Table, Td, Spinner } from "../../components/ui";
+import { ArrowRight, Download, Heart, UserPlus, Users as UsersIcon } from "lucide-react";
+import { Avatar, Button, Card, CardHeader, EmptyState, SearchInput, StatCard, Table, Td, Spinner, useToast } from "../../components/ui";
 import { customers as initial, fmt } from "../../data/mock";
 import { restaurantApi } from "../../api/restaurant";
 
 export default function Customers() {
+  const toast = useToast();
   const [query, setQuery] = useState("");
   const [dataList, setDataList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,15 @@ export default function Customers() {
     return () => { cancelled = true; };
   }, [query]);
 
+  const handleExport = async () => {
+    try {
+      await restaurantApi.exportCustomers({ q: query || undefined });
+      toast("Export CSV téléchargé", "success");
+    } catch (e) {
+      toast(e?.message || "Export impossible", "error");
+    }
+  };
+
   const filtered = dataList.filter(
     (c) => c.name.toLowerCase().includes(query.toLowerCase()) || (c.phone && c.phone.includes(query))
   );
@@ -33,6 +43,9 @@ export default function Customers() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">Clients</h1>
+        <Button variant="secondary" onClick={handleExport}>
+          <Download size={16} /> Exporter CSV
+        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Check, UtensilsCrossed, SearchX } from "lucide-react";
+import { useRef, useState } from "react";
+import { Check, Star, UtensilsCrossed, SearchX } from "lucide-react";
 import { Card, CardHeader, Badge, Button, Input, EmptyState, useToast } from "../../components/ui";
 import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
@@ -16,6 +16,15 @@ export default function OrderTracking() {
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
+  // Avis client
+  const searchNumberRef = useRef("");
+  const searchPhoneRef = useRef("");
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [reviewDone, setReviewDone] = useState(false);
+  const [sendingReview, setSendingReview] = useState(false);
+
   const search = async (e) => {
     e.preventDefault();
     if (!number.trim() || !phone.trim()) {
@@ -27,11 +36,35 @@ export default function OrderTracking() {
     try {
       const result = await storeApi.track(slug, number.trim(), phone.trim());
       setOrder(result);
+      searchNumberRef.current = number.trim().toUpperCase();
+      searchPhoneRef.current = phone.trim();
     } catch {
       setOrder(null);
       setNotFound(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const submitReview = async () => {
+    if (!rating) {
+      toast("Choisissez une note de 1 à 5 étoiles", "error");
+      return;
+    }
+    setSendingReview(true);
+    try {
+      await storeApi.addReview(slug, {
+        number: searchNumberRef.current,
+        phone: searchPhoneRef.current,
+        rating,
+        comment: comment.trim() || undefined,
+      });
+      setReviewDone(true);
+      toast("Merci pour votre avis !");
+    } catch (e) {
+      toast(e?.message || "Impossible d'envoyer votre avis", "error");
+    } finally {
+      setSendingReview(false);
     }
   };
 
@@ -160,6 +193,60 @@ export default function OrderTracking() {
               </div>
             </div>
           </Card>
+
+          {/* Avis client — uniquement après livraison */}
+          {order.status === "Livrée" && (
+            <Card className="mt-4">
+              {reviewDone ? (
+                <div className="p-6 text-center">
+                  <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-50">
+                    <Check size={22} className="text-success-500" />
+                  </span>
+                  <p className="mt-3 text-sm font-semibold text-gray-900">Merci pour votre avis !</p>
+                  <p className="mt-1 text-xs text-gray-500">Il aide le restaurant à s'améliorer.</p>
+                </div>
+              ) : (
+                <>
+                  <CardHeader title="Notez votre commande" subtitle="Votre avis compte pour nous" />
+                  <div className="space-y-3 p-5">
+                    <div className="flex justify-center gap-1.5">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setRating(n)}
+                          onMouseEnter={() => setHoverRating(n)}
+                          onMouseLeave={() => setHoverRating(0)}
+                          aria-label={`${n} étoile${n > 1 ? "s" : ""}`}
+                          className="transition hover:scale-110"
+                        >
+                          <Star
+                            size={30}
+                            className={
+                              n <= (hoverRating || rating)
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-gray-300"
+                            }
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      rows={3}
+                      maxLength={1000}
+                      placeholder="Un commentaire (optionnel)…"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/10"
+                    />
+                    <Button className="w-full" onClick={submitReview} disabled={sendingReview}>
+                      {sendingReview ? "Envoi…" : "Envoyer mon avis"}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </Card>
+          )}
         </>
       )}
     </div>

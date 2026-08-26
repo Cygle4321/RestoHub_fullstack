@@ -1,10 +1,23 @@
-import { apiClient } from "../lib/apiClient";
+import { apiClient, downloadFile } from "../lib/apiClient";
 import { mapOrder, mapProduct, orderStatusToApi } from "../lib/mappers";
 
 export const restaurantApi = {
   dashboard: (params = {}) => {
     const q = new URLSearchParams(params).toString();
     return apiClient.get(`/restaurant/dashboard?${q}`);
+  },
+
+  // Recherche globale
+  search: (q) => apiClient.get(`/restaurant/search?q=${encodeURIComponent(q)}`),
+
+  // Exports CSV (téléchargement fichier)
+  exportOrders: (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return downloadFile(`/restaurant/orders-export?${q}`, "commandes.csv");
+  },
+  exportCustomers: (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return downloadFile(`/restaurant/customers-export?${q}`, "clients.csv");
   },
 
   // Orders
@@ -127,6 +140,7 @@ export const restaurantApi = {
   // Team
   team: () => apiClient.get("/restaurant/team"),
   inviteTeamMember: (body) => apiClient.post("/restaurant/team", body),
+  resendTeamInvitation: (id) => apiClient.post(`/restaurant/team/${id}/resend-invitation`),
   updateTeamMember: (id, body) => apiClient.put(`/restaurant/team/${id}`, body),
   removeTeamMember: (id) => apiClient.delete(`/restaurant/team/${id}`),
 
