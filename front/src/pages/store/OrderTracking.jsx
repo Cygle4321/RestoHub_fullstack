@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Check, Star, UtensilsCrossed, SearchX } from "lucide-react";
 import { Card, CardHeader, Badge, Button, Input, EmptyState, useToast } from "../../components/ui";
 import { useStore } from "../../store/StoreContext";
@@ -10,8 +11,10 @@ const STATUS_ORDER = ["Nouvelle", "Confirmée", "En préparation", "Prête", "En
 export default function OrderTracking() {
   const { slug } = useStore();
   const toast = useToast();
-  const [number, setNumber] = useState("");
-  const [phone, setPhone] = useState("");
+  const [params] = useSearchParams();
+  // Pré-remplissage depuis un QR code de facture (?number=…&phone=…)
+  const [number, setNumber] = useState(params.get("number") || "");
+  const [phone, setPhone] = useState(params.get("phone") || "");
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -25,8 +28,7 @@ export default function OrderTracking() {
   const [reviewDone, setReviewDone] = useState(false);
   const [sendingReview, setSendingReview] = useState(false);
 
-  const search = async (e) => {
-    e.preventDefault();
+  const doSearch = async () => {
     if (!number.trim() || !phone.trim()) {
       toast("Renseignez le numéro de commande et le téléphone", "error");
       return;
@@ -45,6 +47,19 @@ export default function OrderTracking() {
       setLoading(false);
     }
   };
+
+  const search = async (e) => {
+    e.preventDefault();
+    await doSearch();
+  };
+
+  // Ouverture via QR code de facture : recherche automatique
+  useEffect(() => {
+    if (slug && params.get("number") && params.get("phone")) {
+      doSearch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
 
   const submitReview = async () => {
     if (!rating) {

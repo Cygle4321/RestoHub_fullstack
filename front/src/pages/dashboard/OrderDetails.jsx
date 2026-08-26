@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, CreditCard, MapPin, Phone, Printer, XCircle, X as XIcon } from "lucide-react";
+import QRCode from "qrcode";
 import { Avatar, Badge, Button, Card, CardHeader, Modal, Spinner, statusVariant, useToast } from "../../components/ui";
 import { fmt } from "../../lib/mappers";
 import { downloadOrderPdf } from "../../lib/documents";
@@ -55,10 +56,23 @@ export default function OrderDetails() {
     await changeStatus("Annulée");
   };
 
-  const printReceipt = () => {
+  const printReceipt = async () => {
+    // QR code : la cliente/le client scanne et voit le statut de sa commande
+    let qrDataUrl = "";
+    try {
+      const slug = restaurant?.slug || "";
+      const trackUrl = `${window.location.origin}/store/${slug}/track?number=${encodeURIComponent(order.number || "")}&phone=${encodeURIComponent(order.customer?.phone || "")}`;
+      if (slug) {
+        qrDataUrl = await QRCode.toDataURL(trackUrl, { width: 240, margin: 1 });
+      }
+    } catch {
+      /* pas de QR si la génération échoue */
+    }
+
     const err = downloadOrderPdf({
       restaurantName: restaurant?.name || "Mon restaurant",
       order,
+      qrDataUrl,
     });
     if (err) toast(err, "error");
   };

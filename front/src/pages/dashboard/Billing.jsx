@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import QRCode from "qrcode";
 import { Check, Download, ExternalLink, Loader } from "lucide-react";
 import { Badge, Button, Card, CardHeader, Modal, Spinner, Table, Td, useToast } from "../../components/ui";
 import { fmt } from "../../lib/mappers";
@@ -105,12 +106,26 @@ export default function Billing() {
     }
   };
 
-  const downloadInvoice = (h) => {
+  const downloadInvoice = async (h) => {
     const planName = h.plan?.name || current?.name || "Abonnement RestoHub";
+
+    // QR code : renvoie vers l'espace facturation du restaurant
+    let qrDataUrl = "";
+    try {
+      qrDataUrl = await QRCode.toDataURL(`${window.location.origin}/dashboard/billing`, {
+        width: 240,
+        margin: 1,
+      });
+    } catch {
+      /* pas de QR si la génération échoue */
+    }
+
     const err = downloadSubscriptionPdf({
       restaurantName: restaurant?.name || "Mon restaurant",
       inv: h,
       planName,
+      qrDataUrl,
+      qrCaption: "Espace<br/>facturation",
     });
     if (err) toast(err, "error");
   };

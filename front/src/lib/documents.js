@@ -16,7 +16,7 @@ const BRAND = {
   border: "#e4e4e7",
 };
 
-function shell({ title, restaurantName, children, note }) {
+function shell({ title, restaurantName, children, note, qrDataUrl, qrCaption }) {
   return `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>${title}</title>
   <style>
     *{box-sizing:border-box}
@@ -58,7 +58,19 @@ function shell({ title, restaurantName, children, note }) {
     </div>
   </div>
   <div class="body">${children}</div>
-  <div class="foot"><span>${restaurantName} · RestoHub</span>${note ? `<span>${note}</span>` : ""}</div>
+  <div class="foot">
+    <span>${restaurantName} · RestoHub</span>
+    ${
+      qrDataUrl
+        ? `<span style="display:flex;align-items:center;gap:10px">
+             ${qrCaption ? `<span style="text-align:right">${qrCaption}</span>` : ""}
+             <img src="${qrDataUrl}" alt="QR Code" style="width:84px;height:84px;border:1px solid ${BRAND.border};border-radius:8px;padding:4px;background:#fff" />
+           </span>`
+        : note
+          ? `<span>${note}</span>`
+          : ""
+    }
+  </div>
   <script>window.onload=function(){window.focus();window.print()}</script>
   </body></html>`;
 }
@@ -76,7 +88,7 @@ function money(n) {
 }
 
 /** Facture d'abonnement (historique de facturation). */
-export function downloadSubscriptionPdf({ restaurantName, inv, planName }) {
+export function downloadSubscriptionPdf({ restaurantName, inv, planName, qrDataUrl, qrCaption }) {
   const number = inv.number || `SUB-${String(inv.id).padStart(4, "0")}`;
   const statusLabels = {
     active: "Actif",
@@ -96,6 +108,8 @@ export function downloadSubscriptionPdf({ restaurantName, inv, planName }) {
       title: "Facture d'abonnement",
       restaurantName,
       note: "RestoHub — Plateforme SaaS de gestion de restaurants",
+      qrDataUrl,
+      qrCaption: qrCaption || "Espace facturation",
       children: `
         <div class="grid">
           <div class="card">
@@ -125,7 +139,7 @@ export function downloadSubscriptionPdf({ restaurantName, inv, planName }) {
 }
 
 /** Facture / reçu de commande client. */
-export function downloadOrderPdf({ restaurantName, order }) {
+export function downloadOrderPdf({ restaurantName, order, qrDataUrl, qrCaption }) {
   const number = order.number || order.id;
   const items = order.items || [];
   const subtotal = order.subtotal != null ? order.subtotal : order.total - (order.delivery_fee || 0);
@@ -144,6 +158,8 @@ export function downloadOrderPdf({ restaurantName, order }) {
       title: "Facture de commande",
       restaurantName,
       note: order.status || "",
+      qrDataUrl,
+      qrCaption: qrCaption || "Suivez votre<br/>commande",
       children: `
         <div class="grid">
           <div class="card">
