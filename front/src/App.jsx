@@ -15,6 +15,8 @@ const Register = lazy(() => import("./pages/public/Register"));
 const ForgotPassword = lazy(() => import("./pages/public/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/public/ResetPassword"));
 const EmailVerified = lazy(() => import("./pages/public/EmailVerified"));
+const Terms = lazy(() => import("./pages/public/Terms"));
+const Privacy = lazy(() => import("./pages/public/Privacy"));
 const Onboarding = lazy(() => import("./pages/onboarding/Onboarding"));
 
 const DashboardHome = lazy(() => import("./pages/dashboard/DashboardHome"));
@@ -85,6 +87,8 @@ const router = createBrowserRouter([
       { path: "/forgot-password", element: <ForgotPassword /> },
       { path: "/reset-password", element: <ResetPassword /> },
       { path: "/email-verified", element: <EmailVerified /> },
+      { path: "/terms", element: <Terms /> },
+      { path: "/privacy", element: <Privacy /> },
       { path: "/onboarding", element: <Onboarding /> },
 
       // Restaurant dashboard — owner | staff

@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import {
   UtensilsCrossed, ShoppingCart, CreditCard, Bike, QrCode, BarChart3,
-  Check, Star, ArrowRight, Store, Menu,
+  Check, Star, ArrowRight, Store, Menu, LayoutDashboard,
 } from "lucide-react";
 import { Button, Badge } from "../../components/ui";
 import { plans, fmt } from "../../data/mock";
+import { useAuth } from "../../context/AuthContext";
 
 const features = [
   { icon: Store, title: "Boutique en ligne", text: "Votre restaurant en ligne, personnalisable à vos couleurs, sans aucune ligne de code." },
@@ -28,6 +29,9 @@ const testimonials = [
 ];
 
 export default function Landing() {
+  const { user } = useAuth();
+  const dashboardPath = user?.role === "super_admin" ? "/admin" : "/dashboard";
+
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       {/* Navbar */}
@@ -45,12 +49,20 @@ export default function Landing() {
             <a href="#temoignages" className="hover:text-zinc-900">Témoignages</a>
           </nav>
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link to="/login" className="hidden sm:block">
-              <Button variant="ghost">Se connecter</Button>
-            </Link>
-            <Link to="/register">
-              <Button className="px-3 text-sm sm:px-4">Créer ma boutique</Button>
-            </Link>
+            {user ? (
+              <Link to={dashboardPath}>
+                <Button><LayoutDashboard size={16} /> Mon Dashboard</Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="hidden sm:block">
+                  <Button variant="ghost">Se connecter</Button>
+                </Link>
+                <Link to="/register">
+                  <Button className="px-3 text-sm sm:px-4">Créer ma boutique</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -276,6 +288,8 @@ export default function Landing() {
             <a href="#tarifs" className="hover:text-zinc-900">Tarifs</a>
             <Link to="/login" className="hover:text-zinc-900">Connexion</Link>
             <Link to="/register" className="hover:text-zinc-900">Inscription</Link>
+            <Link to="/terms" className="hover:text-zinc-900">Conditions d'utilisation</Link>
+            <Link to="/privacy" className="hover:text-zinc-900">Confidentialité</Link>
           </nav>
           <p className="text-sm text-zinc-400">© 2026 RestoHub. Tous droits réservés.</p>
         </div>

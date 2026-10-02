@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { UtensilsCrossed, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { UtensilsCrossed, Eye, EyeOff, AlertCircle, Mail } from "lucide-react";
 import { Button, useToast } from "../../components/ui";
 import { useAuth } from "../../context/AuthContext";
 
@@ -118,13 +118,16 @@ export default function Register() {
             </Field>
 
             <Field label="Adresse email *" error={errors.email}>
-              <input
-                type="email"
-                className={inputClass("email")}
-                placeholder="vous@restaurant.com"
-                value={form.email}
-                onChange={set("email")}
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  className={inputClass("email") + " pr-10"}
+                  placeholder="vous@restaurant.com"
+                  value={form.email}
+                  onChange={set("email")}
+                />
+                <Mail size={16} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+              </div>
             </Field>
 
             <Field label="Mot de passe *" error={errors.password}>
@@ -175,8 +178,8 @@ export default function Register() {
                   }`}
                 />
                 <span className="text-sm text-gray-600">
-                  J'accepte les <span className="font-medium text-primary-600">conditions d'utilisation</span> et la{" "}
-                  <span className="font-medium text-primary-600">politique de confidentialité</span>.
+                  J'accepte les <Link to="/terms" target="_blank" className="font-medium text-primary-600 underline hover:text-primary-700">conditions d'utilisation</Link> et la{" "}
+                  <Link to="/privacy" target="_blank" className="font-medium text-primary-600 underline hover:text-primary-700">politique de confidentialité</Link>.
                 </span>
               </label>
               {errors.terms && (

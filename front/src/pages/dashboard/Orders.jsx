@@ -35,6 +35,8 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const [total, setTotal] = useState(0);
+
   const loadOrders = useCallback(async () => {
     try {
       const data = await restaurantApi.orders({
@@ -42,10 +44,14 @@ export default function Orders() {
         mode: MODE_TO_API[mode],
         q: query || undefined,
         date: date || undefined,
+        per_page: 200,
       });
-      setOrders(data.data || data || []);
+      const list = data.data || data || [];
+      setOrders(Array.isArray(list) ? list : []);
+      setTotal(data.total ?? (Array.isArray(list) ? list.length : 0));
     } catch {
       setOrders([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -93,7 +99,7 @@ export default function Orders() {
     <div className="space-y-6">
       <PageHeader
         title="Commandes"
-        subtitle={`${orders.length} commandes au total`}
+        subtitle={`${status === "Toutes" ? total : orders.length} commande${(status === "Toutes" ? total : orders.length) > 1 ? "s" : ""} au total`}
         actions={
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={handleRefresh}>
