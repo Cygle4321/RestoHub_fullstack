@@ -91,6 +91,7 @@ export default function DashboardLayout() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const notifRef = useRef(null);
   const { user, restaurant, logout } = useAuth();
   const navigate = useNavigate();
   const ownerName = user?.name || "Utilisateur";
@@ -98,6 +99,18 @@ export default function DashboardLayout() {
 
   // Recherche globale
   const [query, setQuery] = useState("");
+
+  // Ferme le panel de notifications quand on clique en dehors
+  useEffect(() => {
+    if (!showNotifications) return;
+    const handler = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showNotifications]);
   const [results, setResults] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -414,68 +427,67 @@ export default function DashboardLayout() {
               <span className={`h-1.5 w-1.5 rounded-full ${restaurant?.is_open ? "animate-pulse bg-success-500" : "bg-danger-500"}`} />
               {restaurant?.is_open ? "Boutique ouverte" : "Boutique fermée"}
             </span>
-            <div className="relative">
-              <button 
-                onClick={() => setShowNotifications(!showNotifications)}
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setShowNotifications((v) => !v)}
                 className="relative rounded-xl p-2 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-700"
+                aria-label="Notifications"
+                aria-expanded={showNotifications}
               >
                 <Bell size={18} strokeWidth={1.75} />
                 {unreadCount > 0 && (
-                  <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-500 px-1 text-[10px] font-bold text-white ring-2 ring-white">
+                  <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-600 px-1 text-[10px] font-bold text-white ring-2 ring-white">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </button>
-              
+
               {showNotifications && (
-                <>
-                  <div className="fixed inset-0 z-20" onClick={() => setShowNotifications(false)} />
-                  <div className="absolute right-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-zinc-100 bg-white p-3 shadow-xl">
-                    <div className="mb-2 flex items-center justify-between px-2 pt-1">
-                      <h3 className="text-sm font-bold text-zinc-900">Notifications</h3>
-                      <button
-                        onClick={markAllRead}
-                        className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
-                      >
-                        <CheckCheck size={13} /> Tout marquer comme lu
-                      </button>
-                    </div>
-                    <div className="flex max-h-[300px] flex-col gap-1 overflow-y-auto">
-                      {notifications.length === 0 ? (
-                        <p className="px-2 py-8 text-center text-sm text-zinc-400">Aucune notification</p>
-                      ) : (
-                        notifications.map((n) => (
-                          <button
-                            key={n.id}
-                            onClick={() => markRead(n.id)}
-                            className={`flex w-full items-start gap-3 rounded-xl p-2 text-left transition hover:bg-zinc-50 ${n.is_read ? "opacity-60" : ""}`}
-                          >
-                            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${n.kind === "cancel" ? "bg-danger-50 text-danger-600" : n.kind === "support" ? "bg-primary-50 text-primary-600" : "bg-primary-50 text-primary-600"}`}>
-                              {n.kind === "cancel" ? <AlertCircle size={14} /> : n.kind === "support" ? <LifeBuoy size={14} /> : <ShoppingCart size={14} />}
-                            </div>
-                            <div>
-                              <p className="text-[13px] font-medium text-zinc-900">
-                                {n.kind === "cancel" ? (
-                                  <>Commande {n.data?.order_number || ""} annulée</>
-                                ) : n.kind === "support" ? (
-                                  <>Réponse du support — {n.data?.subject || "votre ticket"}</>
-                                ) : (
-                                  <>Nouvelle commande {n.data?.order_number || ""}</>
-                                )}
-                              </p>
-                              <p className="text-xs text-zinc-500">
-                                {n.kind === "order" && n.data?.customer_name ? `${n.data.customer_name} · ` : ""}
-                                {n.data?.total != null ? `${Number(n.data.total).toLocaleString("fr-FR")} FCFA` : ""}
-                              </p>
-                              <p className="mt-0.5 text-[11px] text-zinc-400">{timeAgo(n.created_at)}</p>
-                            </div>
-                            {!n.is_read && <span className="ml-auto mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-500" />}
-                          </button>
-                        ))
-                      )}
-                    </div>
+                <div className="absolute right-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-zinc-100 bg-white p-3 shadow-xl">
+                  <div className="mb-2 flex items-center justify-between px-2 pt-1">
+                    <h3 className="text-sm font-bold text-zinc-900">Notifications</h3>
+                    <button
+                      onClick={markAllRead}
+                      className="flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700"
+                    >
+                      <CheckCheck size={13} /> Tout marquer comme lu
+                    </button>
                   </div>
-                </>
+                  <div className="flex max-h-[300px] flex-col gap-1 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <p className="px-2 py-8 text-center text-sm text-zinc-400">Aucune notification</p>
+                    ) : (
+                      notifications.map((n) => (
+                        <button
+                          key={n.id}
+                          onClick={() => markRead(n.id)}
+                          className={`flex w-full items-start gap-3 rounded-xl p-2 text-left transition hover:bg-zinc-50 ${n.is_read ? "opacity-60" : ""}`}
+                        >
+                          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${n.kind === "cancel" ? "bg-danger-50 text-danger-600" : "bg-primary-50 text-primary-600"}`}>
+                            {n.kind === "cancel" ? <AlertCircle size={14} /> : n.kind === "support" ? <LifeBuoy size={14} /> : <ShoppingCart size={14} />}
+                          </div>
+                          <div>
+                            <p className="text-[13px] font-medium text-zinc-900">
+                              {n.kind === "cancel" ? (
+                                <>Commande {n.data?.order_number || ""} annulée</>
+                              ) : n.kind === "support" ? (
+                                <>Réponse du support — {n.data?.subject || "votre ticket"}</>
+                              ) : (
+                                <>Nouvelle commande {n.data?.order_number || ""}</>
+                              )}
+                            </p>
+                            <p className="text-xs text-zinc-500">
+                              {n.kind === "order" && n.data?.customer_name ? `${n.data.customer_name} · ` : ""}
+                              {n.data?.total != null ? `${Number(n.data.total).toLocaleString("fr-FR")} FCFA` : ""}
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-zinc-400">{timeAgo(n.created_at)}</p>
+                          </div>
+                          {!n.is_read && <span className="ml-auto mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary-600" />}
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
               )}
             </div>
             <Avatar name={ownerName} src={user?.avatar} className="hidden sm:inline-flex" />

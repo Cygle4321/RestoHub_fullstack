@@ -66,11 +66,11 @@ export function CardHeader({ title, subtitle, action, className = "" }) {
 /* -------------------------------------------------------------------------- */
 const btnVariants = {
   primary:
-    "bg-primary-500 text-white shadow-sm hover:bg-primary-600 active:bg-primary-700 focus-visible:outline-primary-500",
+    "bg-primary-600 text-white shadow-sm hover:bg-primary-700 active:bg-primary-700 focus-visible:outline-primary-600",
   secondary:
     "bg-white text-zinc-700 ring-1 ring-inset ring-zinc-200 hover:bg-zinc-50 hover:ring-zinc-300 active:bg-zinc-100",
-  success: "bg-success-500 text-white shadow-sm hover:bg-success-600",
-  danger: "bg-danger-500 text-white shadow-sm hover:bg-danger-600",
+  success: "bg-success-600 text-white shadow-sm hover:bg-success-700",
+  danger: "bg-danger-600 text-white shadow-sm hover:bg-danger-700",
   ghost: "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
   soft: "bg-primary-50 text-primary-700 hover:bg-primary-100",
 };
@@ -96,7 +96,7 @@ export function Button({ variant = "primary", size = "md", className = "", child
 /* Inputs                                                                     */
 /* -------------------------------------------------------------------------- */
 const fieldBase =
-  "block w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 shadow-xs transition focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/15";
+  "block w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 shadow-xs transition focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20";
 
 export function Input({ label, className = "", hint, ...props }) {
   return (
@@ -234,7 +234,7 @@ export function EmptyState({ icon: Icon, title, description, action }) {
 export function Spinner({ label = "Chargement…" }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16">
-      <span className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-200 border-t-primary-500" />
+      <span className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-200 border-t-primary-600" />
       <p className="mt-3 text-sm text-zinc-500">{label}</p>
     </div>
   );
@@ -352,7 +352,7 @@ export function SearchInput({ value, onChange, placeholder = "Rechercher…", cl
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="block w-full rounded-xl border border-zinc-200 bg-white py-2.5 pl-10 pr-3 text-sm placeholder-zinc-400 shadow-xs transition focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/15"
+        className="block w-full rounded-xl border border-zinc-200 bg-white py-2.5 pl-10 pr-3 text-sm placeholder-zinc-400 shadow-xs transition focus:border-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-600/20"
       />
     </div>
   );
