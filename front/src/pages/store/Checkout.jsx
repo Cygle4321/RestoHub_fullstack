@@ -48,7 +48,7 @@ export default function Checkout() {
     );
   }
 
-  const selectedZone = zones.find((z) => z.id === zone);
+  const selectedZone = zones.find((z) => String(z.id) === String(zone));
   const deliveryFee = mode === "Livraison" ? selectedZone?.fee ?? 0 : 0;
   const freeDelivery = promo?.type === "free_delivery" && mode === "Livraison";
   const discount = computeDiscount(promo, total, deliveryFee);
