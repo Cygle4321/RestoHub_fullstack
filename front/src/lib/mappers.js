@@ -24,18 +24,56 @@ export function orderStatusToApi(label) {
   return ORDER_STATUS_API[label] || label;
 }
 
+export const PAYMENT_STATUS_LABEL = {
+  paid: "Payé",
+  pending: "En attente",
+  failed: "Échoué",
+  refunded: "Remboursé",
+};
+
+export const PAYMENT_STATUS_VARIANT = {
+  paid: "success",
+  pending: "warning",
+  failed: "danger",
+  refunded: "neutral",
+};
+
+export function paymentMethodLabel(method) {
+  if (!method) return "—";
+  const m = String(method).toLowerCase();
+  if (m.includes("mobile") || m.includes("momo") || m.includes("fedapay")) return "MM";
+  if (m.includes("cash") || m.includes("espèce") || m.includes("livraison")) return "Espèces";
+  if (m.includes("card") || m.includes("carte")) return "Carte";
+  return method;
+}
+
 export function mapOrder(o) {
   if (!o) return o;
+  const pMethod = o.payment_method || o.payment;
+  const pStatus = o.payment_status || "pending";
+
+  const customerName = (typeof o.customer === "object" && o.customer?.name)
+    ? o.customer.name
+    : (o.customer_name || "Client");
+
+  const customerPhone = (typeof o.customer === "object" && o.customer?.phone)
+    ? o.customer.phone
+    : (o.customer_phone || "—");
+
+  const customerEmail = (typeof o.customer === "object" && o.customer?.email)
+    ? o.customer.email
+    : (o.customer_email || "—");
+
   return {
     ...o,
-    number: o.number || o.id,
+    number: o.number || o.id || "CMD-—",
     _id: o.id,
-    status: orderStatusToUi(o.status),
-    mode: o.mode === "livraison" ? "Livraison" : o.mode === "retrait" ? "Retrait" : o.mode,
-    customer: o.customer || {
-      name: o.customer_name,
-      phone: o.customer_phone,
-      email: o.customer_email,
+    status: orderStatusToUi(o.status) || "Nouvelle",
+    mode: o.mode === "livraison" ? "Livraison" : o.mode === "retrait" ? "Retrait" : (o.mode || "Livraison"),
+    customer: {
+      name: customerName,
+      phone: customerPhone,
+      email: customerEmail,
     },
     date: o.created_at
       ? new Date(o.created_at).toLocaleString("fr-FR", {
@@ -45,28 +83,31 @@ export function mapOrder(o) {
           hour: "2-digit",
           minute: "2-digit",
         })
-      : o.date,
+      : (o.date || "—"),
+    payment_method_label: paymentMethodLabel(pMethod),
+    payment_status_label: PAYMENT_STATUS_LABEL[pStatus] || pStatus,
+    payment_status_variant: PAYMENT_STATUS_VARIANT[pStatus] || "warning",
     payment:
-      o.payment_method === "mobile_money"
-        ? "Mobile Money"
-        : o.payment_method === "card"
-          ? "Carte bancaire"
-          : o.payment_method === "cash"
-            ? "Paiement à la livraison"
-            : o.payment || o.payment_method,
+      pMethod === "mobile_money" || pMethod === "fedapay"
+        ? "MM"
+        : pMethod === "card"
+          ? "Carte"
+          : pMethod === "cash"
+            ? "Espèces"
+            : (pMethod || "—"),
     address: o.delivery_address || o.address || "—",
-    items: (o.items || []).map((it) => ({
-      name: it.name,
-      qty: it.quantity ?? it.qty,
-      price: it.unit_price ?? it.price,
-      options: it.options || [],
-      supplements: it.supplements || [],
-    })),
-    history: (o.status_history || o.history || []).map((h) => ({
-      s: orderStatusToUi(h.s || h.status),
-      t: h.t || h.time,
-    })),
-    total: o.total,
+    items: Array.isArray(o.items) ? o.items.map((it) => ({
+      name: it?.name || "Article",
+      qty: it?.quantity ?? it?.qty ?? 1,
+      price: it?.unit_price ?? it?.price ?? 0,
+      options: Array.isArray(it?.options) ? it.options : [],
+      supplements: Array.isArray(it?.supplements) ? it.supplements : [],
+    })) : [],
+    history: Array.isArray(o.status_history || o.history) ? (o.status_history || o.history).map((h) => ({
+      s: orderStatusToUi(h?.s || h?.status) || "Statut",
+      t: h?.t || h?.time || "",
+    })) : [],
+    total: o.total ?? 0,
   };
 }
 

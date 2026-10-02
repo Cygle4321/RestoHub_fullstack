@@ -39,16 +39,16 @@ export default function Orders() {
 
   const loadOrders = useCallback(async () => {
     try {
-      const data = await restaurantApi.orders({
+      const res = await restaurantApi.orders({
         status: status === "Toutes" ? undefined : status,
         mode: MODE_TO_API[mode],
         q: query || undefined,
         date: date || undefined,
         per_page: 200,
       });
-      const list = data.data || data || [];
+      const list = res.data || res || [];
       setOrders(Array.isArray(list) ? list : []);
-      setTotal(data.total ?? (Array.isArray(list) ? list.length : 0));
+      setTotal(res.total ?? (Array.isArray(list) ? list.length : 0));
     } catch {
       setOrders([]);
       setTotal(0);
@@ -184,7 +184,16 @@ export default function Orders() {
                   {o.items.map((it) => `${it.qty}× ${it.name}`).join(", ")}
                 </Td>
                 <Td>{o.mode}</Td>
-                <Td className="text-zinc-500">{o.payment}</Td>
+                <Td>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="inline-flex items-center rounded bg-zinc-100 px-2 py-0.5 text-xs font-bold text-zinc-800">
+                      {o.payment_method_label || o.payment}
+                    </span>
+                    <Badge variant={o.payment_status_variant} size="sm">
+                      {o.payment_status_label}
+                    </Badge>
+                  </div>
+                </Td>
                 <Td>
                   <Badge variant={statusVariant(o.status)} dot>
                     {o.status}
