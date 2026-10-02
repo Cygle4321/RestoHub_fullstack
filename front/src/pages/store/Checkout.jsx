@@ -190,7 +190,7 @@ export default function Checkout() {
           {/* Mode de paiement */}
           <Card>
             <CardHeader title="Mode de paiement" subtitle="Paiements sécurisés" />
-            <div className="grid gap-3 p-5 sm:grid-cols-3">
+            <div className="grid gap-3 p-5 sm:grid-cols-2">
               <label className={radioCard(payment === "Mobile Money")}>
                 <input type="radio" className="mt-0.5 h-4 w-4 accent-primary-600" checked={payment === "Mobile Money"} onChange={() => setPayment("Mobile Money")} />
                 <span>
@@ -198,6 +198,7 @@ export default function Checkout() {
                   <span className="mt-0.5 block text-xs text-zinc-500">Orange, MTN, Wave</span>
                 </span>
               </label>
+              {/* Carte bancaire — temporairement désactivée
               <label className={radioCard(payment === "Carte bancaire")}>
                 <input type="radio" className="mt-0.5 h-4 w-4 accent-primary-600" checked={payment === "Carte bancaire"} onChange={() => setPayment("Carte bancaire")} />
                 <span>
@@ -205,6 +206,7 @@ export default function Checkout() {
                   <span className="mt-0.5 block text-xs text-zinc-500">Visa, Mastercard</span>
                 </span>
               </label>
+              */}
               <label className={radioCard(payment === "Paiement à la livraison")}>
                 <input type="radio" className="mt-0.5 h-4 w-4 accent-primary-600" checked={payment === "Paiement à la livraison"} onChange={() => setPayment("Paiement à la livraison")} />
                 <span>
@@ -235,6 +237,7 @@ export default function Checkout() {
               </div>
             )}
 
+            {/* Carte bancaire — temporairement désactivée
             {payment === "Carte bancaire" && (
               <div className="grid gap-4 border-t border-zinc-100 p-5 sm:grid-cols-[1fr_120px_100px]">
                 <Input label="Numéro de carte" placeholder="4242 4242 4242 4242" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
@@ -242,6 +245,7 @@ export default function Checkout() {
                 <Input label="CVC" placeholder="123" maxLength={4} value={cardCvc} onChange={(e) => setCardCvc(e.target.value)} />
               </div>
             )}
+            */}
           </Card>
         </div>
 

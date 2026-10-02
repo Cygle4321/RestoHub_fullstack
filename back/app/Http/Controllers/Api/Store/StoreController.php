@@ -380,7 +380,7 @@ class StoreController extends Controller
 
         if ($order->customer_email) {
             try {
-                $frontendUrl = (string) env('FRONTEND_URL', 'http://localhost:5173');
+                $frontendUrl = rtrim((string) config('app.frontend_url', 'http://localhost:5173'), '/');
                 Mail::to($order->customer_email)->send(
                     new OrderConfirmationMail($order->load('restaurant', 'items'), $frontendUrl.'/store/'.$slug)
                 );

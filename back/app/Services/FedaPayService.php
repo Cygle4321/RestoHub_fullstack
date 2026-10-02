@@ -401,7 +401,7 @@ class FedaPayService
 
             if ($order->customer_email) {
                 try {
-                    $frontendUrl = (string) env('FRONTEND_URL', 'http://localhost:5173');
+                    $frontendUrl = rtrim((string) config('app.frontend_url', 'http://localhost:5173'), '/');
                     $slug = $order->restaurant?->slug ?? 'le-saveur-dor';
                     \Illuminate\Support\Facades\Mail::to($order->customer_email)->send(
                         new OrderConfirmationMail(

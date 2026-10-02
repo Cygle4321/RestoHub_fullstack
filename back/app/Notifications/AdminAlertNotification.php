@@ -27,7 +27,7 @@ class AdminAlertNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $frontendUrl = (string) env('FRONTEND_URL', 'http://localhost:5173');
+        $frontendUrl = rtrim((string) config('app.frontend_url', 'http://localhost:5173'), '/');
         $kind = $this->data['kind'] ?? 'restaurant';
 
         return match ($kind) {

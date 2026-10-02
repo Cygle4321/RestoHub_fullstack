@@ -17,7 +17,7 @@ class SendTrialReminders extends Command
 {
     public function handle(): int
     {
-        $frontendUrl = (string) env('FRONTEND_URL', 'http://localhost:5173');
+        $frontendUrl = rtrim((string) config('app.frontend_url', 'http://localhost:5173'), '/');
         $sent = 0;
 
         // Essai qui expire dans les 24h ou déjà dépassé, sans abonnement payé,
