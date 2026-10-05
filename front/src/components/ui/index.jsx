@@ -130,7 +130,11 @@ export function Textarea({ label, className = "", ...props }) {
 
 export function Toggle({ checked, onChange, label }) {
   return (
-    <button type="button" onClick={() => onChange(!checked)} className="flex items-center gap-3">
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className="flex items-center gap-3 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
+    >
       <span
         className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${
           checked ? "bg-primary-500" : "bg-zinc-300"
