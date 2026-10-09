@@ -1,9 +1,15 @@
 import { Link } from "react-router-dom";
 import { UtensilsCrossed, ArrowLeft } from "lucide-react";
+import SEO from "../../components/common/SEO";
 
 export default function Privacy() {
   return (
     <div className="min-h-screen bg-zinc-50">
+      <SEO
+        title="Politique de Confidentialité"
+        description="Découvrez comment RestoHub protège et respecte vos données personnelles et celles de vos clients."
+        url="https://restohub.app/privacy"
+      />
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-zinc-100 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-6">

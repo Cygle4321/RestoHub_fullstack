@@ -1,9 +1,11 @@
 import { FileQuestion } from "lucide-react";
 import { Link } from "react-router-dom";
+import SEO from "../components/common/SEO";
 
 export default function NotFound() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f4f4f5] p-6">
+      <SEO title="Page non trouvée (404)" noindex />
       <div className="w-full max-w-md text-center">
         <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-white text-zinc-400 shadow-sm">
           <FileQuestion size={36} strokeWidth={1.5} />

@@ -9,6 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { restaurantApi } from "../../api/restaurant";
 import { plans, fmt } from "../../data/mock";
+import SEO from "../../components/common/SEO";
 
 const stepLabels = ["Restaurant", "Abonnement", "Personnalisation", "Produit", "Publication"];
 const stepIcons = [Store, CreditCard, Palette, Utensils, Rocket];
@@ -189,6 +190,7 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEO title="Configuration du restaurant" noindex />
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-gray-100 bg-white">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-4 sm:px-6">

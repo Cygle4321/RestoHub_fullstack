@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { UtensilsCrossed, MailCheck, ArrowLeft } from "lucide-react";
 import { Button, Input, useToast } from "../../components/ui";
 import { apiClient } from "../../lib/apiClient";
+import SEO from "../../components/common/SEO";
 
 export default function ForgotPassword() {
   const toast = useToast();
@@ -26,6 +27,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+      <SEO title="Mot de passe oublié" noindex />
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center">
           <Link to="/" className="flex items-center gap-2">

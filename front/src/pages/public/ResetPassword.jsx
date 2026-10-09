@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { UtensilsCrossed, ShieldCheck, ArrowLeft, Loader2, MailQuestion } from "lucide-react";
 import { Button, Input, useToast } from "../../components/ui";
 import { apiClient } from "../../lib/apiClient";
+import SEO from "../../components/common/SEO";
 
 export default function ResetPassword() {
   const toast = useToast();
@@ -37,6 +38,7 @@ export default function ResetPassword() {
   if (!email || !token) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+        <SEO title="Réinitialiser le mot de passe" noindex />
         <div className="w-full max-w-md">
           <div className="mb-8 flex flex-col items-center">
             <Link to="/" className="flex items-center gap-2">
@@ -67,6 +69,7 @@ export default function ResetPassword() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+      <SEO title="Nouveau mot de passe" noindex />
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center">
           <Link to="/" className="flex items-center gap-2">

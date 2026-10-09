@@ -32,6 +32,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import SupportWidget from "../components/SupportWidget";
 import { notificationApi } from "../api/notifications";
 import { restaurantApi } from "../api/restaurant";
+import SEO from "../components/common/SEO";
 
 const nav = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard", end: true },
@@ -257,6 +258,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f8]">
+      <SEO title="Espace Restaurant" noindex />
       {/* Mobile overlay */}
       {open && (
         <div

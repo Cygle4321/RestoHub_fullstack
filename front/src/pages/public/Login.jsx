@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { UtensilsCrossed, Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowLeft } from "lucide-react";
 import { Button, Input, useToast } from "../../components/ui";
 import { useAuth } from "../../context/AuthContext";
+import SEO from "../../components/common/SEO";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -73,6 +74,7 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-12">
+      <SEO title="Connexion" noindex />
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center">
           <Link to="/" className="flex items-center gap-2">

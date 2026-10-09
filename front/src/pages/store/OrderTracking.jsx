@@ -5,6 +5,7 @@ import { Card, CardHeader, Badge, Button, Input, EmptyState, useToast } from "..
 import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
 import { fmt } from "../../lib/mappers";
+import SEO from "../../components/common/SEO";
 
 const STATUS_ORDER = ["Nouvelle", "Confirmée", "En préparation", "Prête", "En livraison", "Livrée"];
 
@@ -92,6 +93,7 @@ export default function OrderTracking() {
 
   return (
     <div className="mx-auto max-w-lg px-4 pb-8 pt-4">
+      <SEO title="Suivi de commande" noindex />
       <h1 className="text-xl font-bold text-gray-900">Suivi de commande</h1>
 
       {!order ? (

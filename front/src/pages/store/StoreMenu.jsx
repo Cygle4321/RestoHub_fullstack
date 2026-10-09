@@ -5,9 +5,10 @@ import { Badge, Card, SearchInput, EmptyState, Spinner, useToast } from "../../c
 import { useCart } from "../../store/CartContext";
 import { useStore } from "../../store/StoreContext";
 import { fmt } from "../../lib/mappers";
+import SEO from "../../components/common/SEO";
 
 export default function StoreMenu() {
-  const { slug, loading, error, products, catNames } = useStore();
+  const { slug, loading, error, products, catNames, restaurant } = useStore();
   const [params] = useSearchParams();
   const initialCat = params.get("cat") || "Tout";
   const initialQuery = params.get("q") || "";
@@ -53,8 +54,18 @@ export default function StoreMenu() {
     );
   }
 
+  const storeUrl = typeof window !== "undefined" ? window.location.href : `https://restohub.app/store/${slug}/menu`;
+
   return (
     <div className="mx-auto max-w-5xl px-4 pb-10 pt-5">
+      <SEO
+        title={`Menu & Carte — ${restaurant?.name || "Restaurant"}`}
+        exactTitle
+        description={`Découvrez la carte complète de ${restaurant?.name || "ce restaurant"} : ${catNames.filter((c) => c !== "Tout").slice(0, 5).join(", ")}. Commandez en ligne pour dégustation ou livraison.`}
+        image={restaurant?.cover || restaurant?.logo}
+        url={storeUrl}
+        type="website"
+      />
       <h1 className="text-xl font-bold tracking-tight text-zinc-900">Menu</h1>
       <p className="mt-0.5 text-sm text-zinc-500">{products.length} plats disponibles</p>
 

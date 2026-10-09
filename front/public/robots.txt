@@ -1,0 +1,39 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+
+# Autoriser l'exploration des pages publiques
+Allow: /
+Allow: /store/
+Allow: /terms
+Allow: /privacy
+Allow: /favicon.svg
+Allow: /icon.svg
+Allow: /og-image.svg
+
+# Bloquer l'indexation des interfaces d'administration et privées
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /dashboard/
+Disallow: /dashboard/*
+Disallow: /onboarding
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /email-verified
+
+# Bloquer les étapes de commande privées / tunnels d'achat
+Disallow: /store/*/cart
+Disallow: /store/*/checkout
+Disallow: /store/*/confirmation
+Disallow: /store/*/track
+Disallow: /store/cart
+Disallow: /store/checkout
+Disallow: /store/confirmation
+Disallow: /store/track
+
+# Fichiers de configuration / endpoints API
+Disallow: /api/
+
+# Déclaration du Sitemap
+Sitemap: https://restohub.app/sitemap.xml

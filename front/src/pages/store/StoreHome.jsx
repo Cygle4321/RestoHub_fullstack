@@ -4,6 +4,8 @@ import { Badge, Card, Button, Spinner, EmptyState, useToast } from "../../compon
 import { useCart } from "../../store/CartContext";
 import { useStore, initialsOf } from "../../store/StoreContext";
 import { fmt } from "../../lib/mappers";
+import SEO from "../../components/common/SEO";
+import { generateRestaurantSchema } from "../../lib/seoSchemas";
 
 function ProductCard({ product, onAdd }) {
   const { slug } = useStore();
@@ -73,8 +75,23 @@ export default function StoreHome() {
     );
   }
 
+  const storeUrl = typeof window !== "undefined" ? window.location.href : `https://restohub.app/store/${slug}`;
+  const restaurantSchema = generateRestaurantSchema(restaurant, storeUrl);
+
   return (
     <div className="pb-8">
+      <SEO
+        title={`${restaurant.name} — Menu, Commande & Livraison en Ligne`}
+        exactTitle
+        description={
+          restaurant.description ||
+          `Boutique en ligne et menu digital de ${restaurant.name} (${restaurant.city || "Abidjan"}). Commandez vos plats préférés avec livraison rapide et paiement sécurisé.`
+        }
+        image={restaurant.cover || restaurant.logo}
+        url={storeUrl}
+        type="restaurant"
+        jsonLd={restaurantSchema}
+      />
       {/* Cover */}
       <div className="relative h-44 overflow-hidden sm:h-56 md:h-64">
         {restaurant.cover ? (

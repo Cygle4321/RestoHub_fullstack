@@ -6,6 +6,7 @@ import {
 import { Button, Badge } from "../../components/ui";
 import { plans, fmt } from "../../data/mock";
 import { useAuth } from "../../context/AuthContext";
+import SEO from "../../components/common/SEO";
 
 const features = [
   { icon: Store, title: "Boutique en ligne", text: "Votre restaurant en ligne, personnalisable à vos couleurs, sans aucune ligne de code." },
@@ -34,6 +35,14 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
+      <SEO
+        title="RestoHub — Solution SaaS Tout-en-Un pour Restaurants & Boutiques en Ligne"
+        exactTitle
+        description="Créez votre boutique de restaurant en ligne en 5 minutes : menu digital QR code, commandes en temps réel, paiements Mobile Money et livraisons automatisées."
+        keywords="restohub, saas restaurant, boutique en ligne restaurant, menu qr code, commande restaurant afrique, livraison repas, fedapay"
+        url="https://restohub.app/"
+        type="website"
+      />
       {/* Navbar */}
       <header className="sticky top-0 z-40 border-b border-zinc-100 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">

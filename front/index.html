@@ -1,16 +1,128 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Titre Principal SEO -->
+    <title>RestoHub — Solution SaaS Tout-en-Un pour Restaurants & Boutiques en Ligne</title>
+
+    <!-- Meta Tags Référencement Primaire -->
+    <meta name="description" content="RestoHub est la plateforme SaaS tout-en-un pour les restaurants : créez votre boutique en ligne personnalisée, menus QR Code interactifs, encaissement Mobile Money & CB, gestion des commandes en direct et livraisons sans compétence technique." />
+    <meta name="keywords" content="restohub, saas restaurant, commande en ligne restaurant, menu qr code, livraison restaurant, encaissement mobile money, fedapay restaurant, logiciel restauration abidjan dakar, menu digital restaurant, boutique restaurant en ligne" />
+    <meta name="author" content="RestoHub" />
+    <meta name="creator" content="RestoHub Technologies" />
+    <meta name="publisher" content="RestoHub Technologies" />
+    <meta name="application-name" content="RestoHub" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="rating" content="general" />
+    <meta name="revisit-after" content="7 days" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://restohub.app/" />
+
+    <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="RestoHub" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:title" content="RestoHub — Solution SaaS Tout-en-Un pour Restaurants & Boutiques en Ligne" />
+    <meta property="og:description" content="Lancez votre boutique de restaurant en ligne en 2 minutes : menu QR code, commandes en direct, encaissement Mobile Money & livraisons automatisées." />
+    <meta property="og:url" content="https://restohub.app/" />
+    <meta property="og:image" content="/og-image.svg" />
+    <meta property="og:image:secure_url" content="/og-image.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="RestoHub — Plateforme SaaS de Commande et Gestion pour Restaurants" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@restohub" />
+    <meta name="twitter:creator" content="@restohub" />
+    <meta name="twitter:title" content="RestoHub — Solution SaaS Tout-en-Un pour Restaurants" />
+    <meta name="twitter:description" content="Créez votre restaurant en ligne : menu digital QR code, commandes en direct et paiements Mobile Money." />
+    <meta name="twitter:image" content="/og-image.svg" />
+    <meta name="twitter:image:alt" content="RestoHub — Plateforme SaaS de Commande et Gestion pour Restaurants" />
+
+    <!-- Icônes, PWA & Couleurs de thème -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#14b8a6" />
-    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/icon.svg" />
-    <title>RestoHub — Plateforme restaurants</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#14b8a6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="RestoHub" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Polices Google Pré-connectées -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- Données Structurées Schema.org (JSON-LD) Globales -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://restohub.app/#organization",
+          "name": "RestoHub",
+          "url": "https://restohub.app",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://restohub.app/icon.svg",
+            "width": "512",
+            "height": "512"
+          },
+          "description": "Solution logicielle SaaS dédiée à la commande en ligne, menu QR code et gestion des restaurants.",
+          "sameAs": [
+            "https://twitter.com/restohub",
+            "https://facebook.com/restohub",
+            "https://linkedin.com/company/restohub"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://restohub.app/#website",
+          "url": "https://restohub.app",
+          "name": "RestoHub",
+          "publisher": {
+            "@id": "https://restohub.app/#organization"
+          },
+          "inLanguage": "fr-FR",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://restohub.app/store/menu?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://restohub.app/#software",
+          "name": "RestoHub SaaS",
+          "operatingSystem": "All modern browsers (Web / Mobile / Tablet)",
+          "applicationCategory": "BusinessApplication",
+          "offers": {
+            "@type": "AggregateOffer",
+            "priceCurrency": "XOF",
+            "lowPrice": "0",
+            "highPrice": "25000",
+            "offerCount": "3"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "reviewCount": "148"
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

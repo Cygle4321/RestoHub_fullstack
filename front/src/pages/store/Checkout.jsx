@@ -7,6 +7,7 @@ import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
 import { fmt } from "../../lib/mappers";
 import { computeDiscount } from "../../lib/discount";
+import SEO from "../../components/common/SEO";
 
 export default function Checkout() {
   const { slug, zones } = useStore();
@@ -114,6 +115,7 @@ export default function Checkout() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-8 pt-4">
+      <SEO title="Finaliser ma commande" noindex />
       <h1 className="text-xl font-bold text-zinc-900">Commande</h1>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px]">

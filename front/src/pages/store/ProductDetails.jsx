@@ -5,11 +5,13 @@ import { Badge, Button, EmptyState, Spinner, useToast } from "../../components/u
 import { useCart } from "../../store/CartContext";
 import { useStore } from "../../store/StoreContext";
 import { fmt } from "../../lib/mappers";
+import SEO from "../../components/common/SEO";
+import { generateMenuItemSchema } from "../../lib/seoSchemas";
 
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { slug, loading, error, products } = useStore();
+  const { slug, loading, error, products, restaurant } = useStore();
   const product = products.find((p) => p.id === Number(id));
   const { add } = useCart();
   const toast = useToast();
@@ -69,8 +71,22 @@ export default function ProductDetails() {
     navigate(`/store/${slug}/menu`);
   };
 
+  const productUrl = typeof window !== "undefined" ? window.location.href : `https://restohub.app/store/${slug}/product/${id}`;
+
   return (
     <div className="mx-auto max-w-3xl px-4 pb-28 pt-4">
+      <SEO
+        title={`${product.name} — ${restaurant?.name || "Restaurant"}`}
+        exactTitle
+        description={
+          product.description ||
+          `Dégustez ${product.name} au prix de ${fmt(product.price)} chez ${restaurant?.name || "RestoHub"}. Commandez en ligne dès maintenant.`
+        }
+        image={product.image || restaurant?.logo}
+        url={productUrl}
+        type="product"
+        jsonLd={generateMenuItemSchema(product, restaurant, productUrl)}
+      />
       <button
         onClick={() => navigate(-1)}
         className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-zinc-600 hover:text-zinc-900"

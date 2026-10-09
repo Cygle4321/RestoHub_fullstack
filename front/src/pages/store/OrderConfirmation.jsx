@@ -5,6 +5,7 @@ import { Card, Badge, Button, EmptyState } from "../../components/ui";
 import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
 import { fmt } from "../../lib/mappers";
+import SEO from "../../components/common/SEO";
 
 export default function OrderConfirmation() {
   const { state } = useLocation();
@@ -106,6 +107,7 @@ export default function OrderConfirmation() {
 
   return (
     <div className="mx-auto max-w-md px-4 pb-8 pt-10 text-center">
+      <SEO title="Confirmation de commande" noindex />
       <span
         className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full ${
           approved ? "bg-success-50" : "bg-amber-50"

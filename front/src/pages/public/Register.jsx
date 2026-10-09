@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { UtensilsCrossed, Eye, EyeOff, AlertCircle, Mail } from "lucide-react";
 import { Button, useToast } from "../../components/ui";
 import { useAuth } from "../../context/AuthContext";
+import SEO from "../../components/common/SEO";
 
 /** Champ avec bordure rouge + message d'erreur intégré */
 function Field({ label, error, children }) {
@@ -84,6 +85,7 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+      <SEO title="Créer un compte restaurant" noindex />
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center">
           <Link to="/" className="flex items-center gap-2">

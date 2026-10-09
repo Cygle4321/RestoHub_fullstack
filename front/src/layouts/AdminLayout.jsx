@@ -23,6 +23,7 @@ import EmailVerificationBanner from "../components/EmailVerificationBanner";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
 import { notificationApi } from "../api/notifications";
+import SEO from "../components/common/SEO";
 
 const nav = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
@@ -133,6 +134,7 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-[#f4f4f5]">
+      <SEO title="Administration Globale" noindex />
       {open && (
         <div
           className="fixed inset-0 z-30 bg-zinc-900/50 backdrop-blur-[2px] lg:hidden"

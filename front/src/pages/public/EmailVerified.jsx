@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import SEO from "../../components/common/SEO";
 
 export default function EmailVerified() {
   const { user, refresh } = useAuth();
@@ -19,6 +20,7 @@ export default function EmailVerified() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f7f7f8] px-4">
+      <SEO title="Email vérifié" noindex />
       <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 text-center shadow-sm">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-success-50">
           <svg

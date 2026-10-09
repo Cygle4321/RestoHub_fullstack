@@ -21,6 +21,7 @@ import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
 import { fmt } from "../../lib/mappers";
 import { computeDiscount } from "../../lib/discount";
+import SEO from "../../components/common/SEO";
 
 export default function Cart() {
   const { items, setQty, remove, clear, total } = useCart();
@@ -100,6 +101,7 @@ export default function Cart() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 pb-10 pt-2">
+      <SEO title="Mon Panier" noindex />
       {/* En-tête décoratif */}
       <div
         className="relative overflow-hidden rounded-3xl px-6 py-8 text-white shadow-card sm:px-8"
