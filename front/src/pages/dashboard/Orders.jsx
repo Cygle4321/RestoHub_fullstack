@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Download, Inbox, RefreshCw } from "lucide-react";
+import { ArrowRight, Download, Inbox, RefreshCw, Users } from "lucide-react";
 import {
   Badge,
   Button,
@@ -18,7 +18,7 @@ import {
   PageHeader,
 } from "../../components/ui";
 import { restaurantApi } from "../../api/restaurant";
-import { fmt, orderStatusToApi } from "../../lib/mappers";
+import { fmt, orderStatusToApi, isGroupOrder, extractGroupCode, parseItemParticipant } from "../../lib/mappers";
 import { waLink, orderWaText } from "../../lib/whatsapp";
 
 const orderStatuses = ["Nouvelle", "Confirmée", "En préparation", "Prête", "En livraison", "Livrée", "Annulée"];
@@ -34,6 +34,7 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [groupOnly, setGroupOnly] = useState(false);
 
   const [total, setTotal] = useState(0);
 
@@ -154,34 +155,144 @@ export default function Orders() {
             <option value="Retrait">Retrait</option>
           </Select>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full sm:w-auto" />
+          <button
+            type="button"
+            onClick={() => setGroupOnly(!groupOnly)}
+            className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition whitespace-nowrap ${
+              groupOnly
+                ? "border-primary-600 bg-primary-600 text-white shadow-xs"
+                : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
+            }`}
+          >
+            <Users size={14} className={groupOnly ? "text-white" : "text-primary-600"} />
+            <span>Groupées ({orders.filter(isGroupOrder).length})</span>
+          </button>
         </div>
 
         {loading ? (
           <Card>
             <Spinner label="Chargement des commandes…" />
           </Card>
-        ) : orders.length === 0 ? (
+        ) : orders.filter((o) => !groupOnly || isGroupOrder(o)).length === 0 ? (
           <EmptyState
             icon={Inbox}
             title="Aucune commande trouvée"
             description="Essayez de modifier vos filtres ou votre recherche."
           />
         ) : (
+          <>
+            {/* Mobile View: Cartes tactiles ultra-lisibles */}
+        <div className="divide-y divide-zinc-100 md:hidden">
+          {orders
+            .filter((o) => !groupOnly || isGroupOrder(o))
+            .map((o) => (
+              <div key={o._id ?? o.id} className="p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-mono text-xs font-black text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded-md">
+                      {o.number || o.id}
+                    </span>
+                    {isGroupOrder(o) && (
+                      <span className="inline-flex items-center gap-1 rounded bg-primary-50 px-1.5 py-0.5 text-[10px] font-black text-primary-700 ring-1 ring-inset ring-primary-200/80">
+                        <Users size={10} /> {extractGroupCode(o) || "Groupe"}
+                      </span>
+                    )}
+                  </div>
+                  <Badge variant={statusVariant(o.status)} dot>
+                    {o.status}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-900">{o.customer?.name || "Client"}</p>
+                    <p className="text-xs text-zinc-400">{o.customer?.phone || "Sans tél"}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => openWhatsApp(e, o)}
+                      title={`WhatsApp ${o.customer?.name || ""}`}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 transition hover:bg-emerald-100"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91A9.85 9.85 0 0 0 12.04 2Zm5.8 14.03c-.24.68-1.42 1.3-1.96 1.35-.5.05-.98.23-2.78-.58a10.4 10.4 0 0 1-4.28-3.77c-.31-.46-.53-1-.75-1.54-.22-.55-.33-1.07-.35-1.6-.02-.52.36-1.13.62-1.44.26-.31.57-.39.76-.4h.55c.18 0 .41-.06.63.48.23.56.79 1.94.86 2.08.07.14.11.3.02.49-.09.19-.19.34-.37.53-.18.19-.28.28-.4.48-.12.2-.02.4.09.58.11.19.61.99 1.3 1.6.89.79 1.63 1.04 1.87 1.16.24.12.38.1.52-.06.14-.16.6-.7.76-.94.16-.24.32-.2.54-.12.22.08 1.4.66 1.64.78.24.12.4.18.46.28.06.1.06.59-.18 1.27Z"/>
+                      </svg>
+                    </button>
+                    <Link
+                      to={`/dashboard/orders/${o._id ?? o.id}`}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition hover:bg-primary-50 hover:text-primary-600"
+                    >
+                      <ArrowRight size={15} />
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="text-xs text-zinc-500 line-clamp-2 bg-zinc-50/70 p-2.5 rounded-xl border border-zinc-100">
+                  {o.items.map((it, idx) => {
+                    const { cleanName, participant } = parseItemParticipant(it.name);
+                    return (
+                      <span key={idx}>
+                        {idx > 0 && ", "}
+                        <strong className="font-semibold text-zinc-700">{it.qty}×</strong> {cleanName}
+                        {participant && (
+                          <span className="ml-0.5 font-bold text-primary-700">[{participant}]</span>
+                        )}
+                      </span>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-zinc-100 text-xs">
+                  <div className="flex items-center gap-1.5 text-zinc-500">
+                    <span className="rounded bg-zinc-100 px-1.5 py-0.5 font-medium">{o.mode}</span>
+                    <span>·</span>
+                    <span>{o.date}</span>
+                  </div>
+                  <span className="font-extrabold text-sm text-zinc-900">{fmt(o.total)}</span>
+                </div>
+              </div>
+            ))}
+        </div>
+
+        {/* Desktop View: Tableau complet */}
+        <div className="hidden md:block">
           <Table
             headers={["N°", "Client", "Date", "Articles", "Mode", "Paiement", "Statut", "Total", ""]}
           >
-            {orders.map((o) => (
+            {orders
+              .filter((o) => !groupOnly || isGroupOrder(o))
+              .map((o) => (
               <tr key={o._id ?? o.id} className="group transition hover:bg-zinc-50/70">
                 <Td className="font-semibold text-zinc-900">{o.number || o.id}</Td>
                 <Td>
                   <div>
-                    <p className="font-medium text-zinc-900">{o.customer.name}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="font-medium text-zinc-900">{o.customer.name}</p>
+                      {isGroupOrder(o) && (
+                        <span className="inline-flex items-center gap-1 rounded bg-primary-50 px-1.5 py-0.5 text-[10px] font-black text-primary-700 ring-1 ring-inset ring-primary-200/80">
+                          <Users size={10} /> {extractGroupCode(o) || "Groupe"}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-zinc-400">{o.customer.phone}</p>
                   </div>
                 </Td>
                 <Td className="text-zinc-500">{o.date}</Td>
-                <Td className="max-w-[180px] truncate text-zinc-600">
-                  {o.items.map((it) => `${it.qty}× ${it.name}`).join(", ")}
+                <Td className="max-w-[190px] text-zinc-600">
+                  <div className="truncate">
+                    {o.items.map((it, idx) => {
+                      const { cleanName, participant } = parseItemParticipant(it.name);
+                      return (
+                        <span key={idx}>
+                          {idx > 0 && ", "}
+                          {it.qty}× {cleanName}
+                          {participant && (
+                            <span className="ml-0.5 font-bold text-primary-700">[{participant}]</span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </Td>
                 <Td>{o.mode}</Td>
                 <Td>
@@ -223,6 +334,8 @@ export default function Orders() {
               </tr>
             ))}
           </Table>
+        </div>
+        </>
         )}
       </Card>
     </div>

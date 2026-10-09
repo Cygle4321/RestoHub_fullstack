@@ -10,11 +10,25 @@ import {
   Maximize,
   Minimize,
   Ticket,
+  Users,
+  Printer,
+  Tag,
+  CheckCircle2,
+  Package,
 } from "lucide-react";
 import { useToast } from "../../components/ui";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { restaurantApi } from "../../api/restaurant";
-import { orderStatusToApi } from "../../lib/mappers";
+import {
+  orderStatusToApi,
+  isGroupOrder,
+  extractGroupCode,
+  parseItemParticipant,
+  getGroupOrderParticipants,
+  groupOrderItemsByParticipant,
+} from "../../lib/mappers";
+import BoxLabelsModal from "../../components/common/BoxLabelsModal";
+import { useAuth } from "../../context/AuthContext";
 
 /**
  * Écran Cuisine (KDS) — cartes façon ticket de caisse
@@ -49,6 +63,7 @@ function LiveClock() {
 
 export default function Kitchen() {
   const toast = useToast();
+  const { restaurant } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -56,6 +71,10 @@ export default function Kitchen() {
   const [cancelTarget, setCancelTarget] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [mobileTab, setMobileTab] = useState("all");
+  const [groupFilter, setGroupFilter] = useState("all"); // "all" | "group"
+  const [packagingMode, setPackagingMode] = useState({}); // { [orderId]: boolean }
+  const [packedBoxes, setPackedBoxes] = useState({}); // { [`${orderId}_${person}`]: boolean }
+  const [labelOrder, setLabelOrder] = useState(null);
   const [, forceTick] = useState(0);
 
   const load = useCallback(
@@ -161,8 +180,15 @@ export default function Kitchen() {
     window.open(`https://wa.me/${d}?text=${txt}`, "_blank", "noopener");
   };
 
+  const groupOrdersCount = activeOrders.filter(isGroupOrder).length;
+
+  const filteredOrders = activeOrders.filter((o) => {
+    if (groupFilter === "group") return isGroupOrder(o);
+    return true;
+  });
+
   const byStatus = (key) =>
-    activeOrders
+    filteredOrders
       .filter((o) => statusKey(o.status) === key)
       .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
@@ -196,9 +222,30 @@ export default function Kitchen() {
             <span className="text-base font-black uppercase tracking-[.14em] text-zinc-900">Cuisine</span>
           </span>
 
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-3 py-1 text-xs font-bold text-white">
-            {activeOrders.length} en cours
-          </span>
+          {/* Sélecteur Toutes / Commandes Groupées */}
+          <div className="flex items-center gap-1 rounded-full bg-zinc-100 p-1">
+            <button
+              onClick={() => setGroupFilter("all")}
+              className={`rounded-full px-3 py-1 text-xs font-bold transition ${
+                groupFilter === "all"
+                  ? "bg-white text-zinc-900 shadow-xs"
+                  : "text-zinc-600 hover:text-zinc-900"
+              }`}
+            >
+              Toutes ({activeOrders.length})
+            </button>
+            <button
+              onClick={() => setGroupFilter("group")}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition ${
+                groupFilter === "group"
+                  ? "bg-primary-600 text-white shadow-xs"
+                  : "text-primary-700 hover:bg-primary-50"
+              }`}
+            >
+              <Users size={12} />
+              <span>Groupées ({groupOrdersCount})</span>
+            </button>
+          </div>
 
           <div className="ml-auto flex items-center gap-2">
             <LiveClock />
@@ -299,10 +346,16 @@ export default function Kitchen() {
                   const urgent = mins >= URGENT_MIN;
                   const warn = mins >= WARN_MIN && !urgent;
                   const isDelivery = String(o.mode).toLowerCase() === "livraison";
+                  const orderId = o._id || o.id;
+                  const isGroup = isGroupOrder(o);
+                  const groupCode = extractGroupCode(o);
+                  const participants = getGroupOrderParticipants(o);
+                  const { grouped, ungrouped } = groupOrderItemsByParticipant(o.items || []);
+                  const isPackaging = Boolean(packagingMode[orderId]);
 
                   return (
                     <article
-                      key={o._id || o.id}
+                      key={orderId}
                       className={`kds-card overflow-hidden rounded-lg bg-white shadow-sm ring-1 transition duration-200 hover:shadow-md ${
                         urgent ? "ring-danger-300" : warn ? "ring-amber-300" : "ring-zinc-200/80"
                       }`}
@@ -316,6 +369,19 @@ export default function Kitchen() {
                           <Ticket size={13} /> {o.number}
                         </span>
                       </div>
+
+                      {/* Badge Commande Groupée Bureau */}
+                      {isGroup && (
+                        <div className="bg-gradient-to-r from-primary-950 to-zinc-900 px-3 py-1.5 text-white flex items-center justify-between text-[11px] font-bold border-b border-primary-500/20">
+                          <span className="flex items-center gap-1.5 text-primary-300">
+                            <Users size={12} />
+                            <span>Commande Groupée</span>
+                          </span>
+                          <span className="rounded bg-primary-500/30 px-1.5 py-0.5 font-mono text-[10px] text-primary-200">
+                            {groupCode || "GROUPE"}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Client + chrono */}
                       <div className="flex items-center justify-between gap-2 px-3 pt-2.5">
@@ -336,25 +402,148 @@ export default function Kitchen() {
                         </span>
                       </div>
 
-                      {/* Articles — lignes de ticket */}
-                      <ul className="space-y-1 px-3 pb-2 pt-2">
-                        {(o.items || []).map((it, i) => (
-                          <li key={`${o.number}-${i}`}>
-                            <p className="text-sm leading-snug text-zinc-800">
-                              <span className="font-black text-zinc-900">{it.qty}×</span>{" "}
-                              <span className="font-semibold">{it.name}</span>
-                            </p>
-                            {((it.options?.length || 0) > 0 || (it.supplements?.length || 0) > 0) && (
-                              <p className="ml-6 mt-0.5 text-[11px] leading-snug text-zinc-500">
-                                {[
-                                  ...(it.options || []).map((op) => op.choice ? `${op.name}: ${op.choice}` : op.name),
-                                  ...(it.supplements || []).map((s) => `+ ${s.name}`),
-                                ].join(" · ")}
-                              </p>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
+                      {/* Barre d'outils Commande Groupée : Cuisson / Boîtes / Étiquettes */}
+                      {isGroup && (
+                        <div className="mx-3 mt-2 flex items-center justify-between rounded-lg border border-primary-200/60 bg-primary-50/50 p-1 text-[11px]">
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => setPackagingMode((prev) => ({ ...prev, [orderId]: false }))}
+                              className={`rounded px-2 py-0.5 font-bold transition ${
+                                !isPackaging
+                                  ? "bg-white text-zinc-900 shadow-xs"
+                                  : "text-zinc-500 hover:text-zinc-900"
+                              }`}
+                            >
+                              Cuisson ({o.items?.length || 0})
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPackagingMode((prev) => ({ ...prev, [orderId]: true }))}
+                              className={`rounded px-2 py-0.5 font-bold transition flex items-center gap-1 ${
+                                isPackaging
+                                  ? "bg-primary-600 text-white shadow-xs"
+                                  : "text-primary-700 hover:bg-primary-100"
+                              }`}
+                            >
+                              <Package size={12} />
+                              <span>Boîtes ({participants.length || 1})</span>
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setLabelOrder(o)}
+                            title="Imprimer les étiquettes pour les boîtes repas"
+                            className="inline-flex items-center gap-1 rounded border border-primary-200 bg-white px-2 py-0.5 font-bold text-primary-900 shadow-xs hover:bg-primary-50 transition"
+                          >
+                            <Tag size={11} className="text-primary-600" />
+                            <span>Étiquettes</span>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Articles : Mode Emballage par Prénom OU Mode Cuisson Standard */}
+                      {isGroup && isPackaging ? (
+                        <div className="space-y-2 px-3 py-2">
+                          {Object.entries(grouped).map(([person, pItems]) => {
+                            const boxKey = `${orderId}_${person}`;
+                            const isPacked = Boolean(packedBoxes[boxKey]);
+                            return (
+                              <div
+                                key={person}
+                                className={`rounded-xl border p-2 text-xs transition ${
+                                  isPacked
+                                    ? "border-emerald-200 bg-emerald-50/70"
+                                    : "border-zinc-200 bg-zinc-50/80"
+                                }`}
+                              >
+                                <label className="flex items-center justify-between cursor-pointer border-b border-zinc-200/50 pb-1 mb-1 font-bold">
+                                  <span className="flex items-center gap-1.5">
+                                    <input
+                                      type="checkbox"
+                                      checked={isPacked}
+                                      onChange={() =>
+                                        setPackedBoxes((prev) => ({
+                                          ...prev,
+                                          [boxKey]: !prev[boxKey],
+                                        }))
+                                      }
+                                      className="h-3.5 w-3.5 rounded accent-emerald-600"
+                                    />
+                                    <span className={`inline-flex items-center gap-1 ${isPacked ? "line-through text-emerald-800" : "text-zinc-900"}`}>
+                                      <Package size={12} className="text-zinc-500" />
+                                      <span>Boîte : {person}</span>
+                                    </span>
+                                  </span>
+                                  {isPacked && <span className="text-[10px] text-emerald-600 font-bold">Prête ✓</span>}
+                                </label>
+                                <ul className="space-y-1 pl-5 text-[11px]">
+                                  {pItems.map((it, i) => (
+                                    <li key={i} className="text-zinc-700">
+                                      <span className="font-bold">{it.qty}×</span> {it.cleanName}
+                                      {((it.options?.length || 0) > 0 || (it.supplements?.length || 0) > 0) && (
+                                        <span className="block text-[10px] text-zinc-400">
+                                          {[
+                                            ...(it.options || []).map((op) => op.choice ? `${op.name}: ${op.choice}` : op.name),
+                                            ...(it.supplements || []).map((s) => `+ ${s.name}`),
+                                          ].join(" · ")}
+                                        </span>
+                                      )}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            );
+                          })}
+                          {ungrouped.length > 0 && (
+                            <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50 p-2 text-xs">
+                              <p className="font-bold text-zinc-700 mb-1">Partagé / Commun :</p>
+                              <ul className="space-y-0.5 pl-2 text-[11px] text-zinc-600">
+                                {ungrouped.map((it, i) => (
+                                  <li key={i}>{it.qty}× {it.cleanName}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <ul className="space-y-1 px-3 pb-2 pt-2">
+                          {(o.items || []).map((it, i) => {
+                            const { cleanName, participant } = parseItemParticipant(it.name);
+                            return (
+                              <li key={`${o.number}-${i}`}>
+                                <div className="flex items-start justify-between gap-1 text-sm leading-snug">
+                                  <p className="text-zinc-800">
+                                    <span className="font-black text-zinc-900">{it.qty}×</span>{" "}
+                                    <span className="font-semibold">{cleanName}</span>
+                                  </p>
+                                  {participant && (
+                                    <span className="shrink-0 rounded-md bg-primary-50 text-primary-700 font-bold px-1.5 py-0.5 text-[10px] ring-1 ring-inset ring-primary-200/80">
+                                      {participant}
+                                    </span>
+                                  )}
+                                </div>
+                                {((it.options?.length || 0) > 0 || (it.supplements?.length || 0) > 0) && (
+                                  <p className="ml-6 mt-0.5 text-[11px] leading-snug text-zinc-500">
+                                    {[
+                                      ...(it.options || []).map((op) => op.choice ? `${op.name}: ${op.choice}` : op.name),
+                                      ...(it.supplements || []).map((s) => `+ ${s.name}`),
+                                    ].join(" · ")}
+                                  </p>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+
+                      {/* Note de commande si existante */}
+                      {o.notes && (
+                        <div className="mx-3 my-1 rounded-lg bg-amber-50/80 border border-amber-200/80 p-2 text-[11px] text-amber-900 leading-snug">
+                          <span className="font-bold">Note : </span>
+                          <span>{o.notes}</span>
+                        </div>
+                      )}
 
                       {/* Mode + WhatsApp */}
                       <div className="mx-3 flex items-center gap-1.5 border-t border-dashed border-zinc-200 pt-2">
@@ -419,6 +608,13 @@ export default function Kitchen() {
         danger
         onConfirm={cancel}
         onClose={() => setCancelTarget(null)}
+      />
+
+      <BoxLabelsModal
+        open={Boolean(labelOrder)}
+        onClose={() => setLabelOrder(null)}
+        order={labelOrder}
+        restaurantName={restaurant?.name}
       />
     </div>
   );

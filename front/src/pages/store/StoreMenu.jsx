@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { UtensilsCrossed, Star, Plus, SearchX } from "lucide-react";
+import { UtensilsCrossed, Star, Plus, SearchX, Users } from "lucide-react";
 import { Badge, Card, SearchInput, EmptyState, Spinner, useToast } from "../../components/ui";
 import { useCart } from "../../store/CartContext";
 import { useStore } from "../../store/StoreContext";
 import { fmt } from "../../lib/mappers";
 import SEO from "../../components/common/SEO";
+import GroupOrderModal from "../../components/common/GroupOrderModal";
 
 export default function StoreMenu() {
   const { slug, loading, error, products, catNames, restaurant } = useStore();
@@ -17,6 +18,7 @@ export default function StoreMenu() {
   const appliedCat = useRef(false);
   const { add } = useCart();
   const toast = useToast();
+  const [groupModalOpen, setGroupModalOpen] = useState(false);
 
   useEffect(() => {
     if (appliedCat.current || catNames.length === 0) return;
@@ -66,8 +68,19 @@ export default function StoreMenu() {
         url={storeUrl}
         type="website"
       />
-      <h1 className="text-xl font-bold tracking-tight text-zinc-900">Menu</h1>
-      <p className="mt-0.5 text-sm text-zinc-500">{products.length} plats disponibles</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-zinc-900">Menu</h1>
+          <p className="mt-0.5 text-sm text-zinc-500">{products.length} plats disponibles</p>
+        </div>
+        <button
+          onClick={() => setGroupModalOpen(true)}
+          className="inline-flex items-center gap-2 self-start sm:self-auto rounded-full bg-zinc-900 text-white px-4 py-2 text-xs font-bold shadow-sm hover:bg-primary-600 transition"
+        >
+          <Users size={14} className="text-primary-400" />
+          <span>Commander en groupe (Bureau)</span>
+        </button>
+      </div>
 
       <div className="sticky top-16 z-10 -mx-4 mt-4 space-y-3 border-b border-zinc-100 bg-[#fafafa]/95 px-4 py-3 backdrop-blur-md">
         <SearchInput value={query} onChange={setQuery} placeholder="Rechercher un plat…" />
@@ -139,6 +152,12 @@ export default function StoreMenu() {
           ))}
         </div>
       )}
+
+      <GroupOrderModal
+        open={groupModalOpen}
+        onClose={() => setGroupModalOpen(false)}
+        slug={slug}
+      />
     </div>
   );
 }

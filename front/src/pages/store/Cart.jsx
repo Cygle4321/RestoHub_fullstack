@@ -19,7 +19,7 @@ import { Card, Button } from "../../components/ui";
 import { useCart } from "../../store/CartContext";
 import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
-import { fmt } from "../../lib/mappers";
+import { fmt, parseItemParticipant } from "../../lib/mappers";
 import { computeDiscount } from "../../lib/discount";
 import SEO from "../../components/common/SEO";
 
@@ -153,7 +153,19 @@ export default function Cart() {
               <div className="flex min-w-0 flex-1 flex-col self-stretch">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <h3 className="truncate text-xs font-bold text-zinc-900 sm:text-sm">{item.name}</h3>
+                    {(() => {
+                      const { cleanName, participant } = parseItemParticipant(item.name);
+                      return (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h3 className="truncate text-xs font-bold text-zinc-900 sm:text-sm">{cleanName}</h3>
+                          {participant && (
+                            <span className="shrink-0 rounded-md bg-zinc-100 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-700 ring-1 ring-inset ring-zinc-200">
+                              {participant}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <p className="text-[11px] text-zinc-500 sm:text-xs">{fmt(item.price)} / unité</p>
                     {(item.options?.length > 0 || item.supplements?.length > 0) && (
                       <p className="mt-0.5 line-clamp-2 text-[10px] text-zinc-400 sm:text-[11px]">

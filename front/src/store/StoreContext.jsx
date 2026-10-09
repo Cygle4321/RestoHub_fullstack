@@ -2,7 +2,13 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { storeApi, DEFAULT_STORE_SLUG } from "../api/store";
 
-const StoreContext = createContext(null);
+const StoreContext =
+  (typeof window !== "undefined" && window.__RESTOHUB_STORE_CONTEXT__) ||
+  createContext(null);
+
+if (typeof window !== "undefined") {
+  window.__RESTOHUB_STORE_CONTEXT__ = StoreContext;
+}
 
 const DAY_KEYS = { 1: "lun", 2: "mar", 3: "mer", 4: "jeu", 5: "ven", 6: "sam", 0: "dim" };
 const CACHE_KEY = "restohub_store_cache";
@@ -91,7 +97,19 @@ export function StoreProvider({ children }) {
 
 export function useStore() {
   const ctx = useContext(StoreContext);
-  if (!ctx) throw new Error("useStore doit être utilisé dans <StoreProvider>");
+  if (!ctx) {
+    return {
+      slug: DEFAULT_STORE_SLUG,
+      loading: false,
+      error: null,
+      restaurant: null,
+      products: [],
+      zones: [],
+      categories: [],
+      catNames: ["Tout"],
+      todayHours: null,
+    };
+  }
   return ctx;
 }
 

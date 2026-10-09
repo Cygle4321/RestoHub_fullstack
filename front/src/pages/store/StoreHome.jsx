@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { UtensilsCrossed, Bike, Plus, MapPin, ArrowRight, Star } from "lucide-react";
+import { UtensilsCrossed, Bike, Plus, MapPin, ArrowRight, Star, Users } from "lucide-react";
 import { Badge, Card, Button, Spinner, EmptyState, useToast } from "../../components/ui";
 import { useCart } from "../../store/CartContext";
 import { useStore, initialsOf } from "../../store/StoreContext";
 import { fmt } from "../../lib/mappers";
 import SEO from "../../components/common/SEO";
 import { generateRestaurantSchema } from "../../lib/seoSchemas";
+import GroupOrderModal from "../../components/common/GroupOrderModal";
 
 function ProductCard({ product, onAdd }) {
   const { slug } = useStore();
@@ -50,6 +52,7 @@ export default function StoreHome() {
   const { slug, loading, error, restaurant, products, categories, zones, catNames } = useStore();
   const { add } = useCart();
   const toast = useToast();
+  const [groupModalOpen, setGroupModalOpen] = useState(false);
 
   const popular = products.filter((p) => p.featured);
   const firstZone = zones[0];
@@ -165,7 +168,35 @@ export default function StoreHome() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl space-y-10 px-4 pt-8">
+      <div className="mx-auto max-w-5xl space-y-8 px-4 pt-8">
+        {/* Bannière Promotionnelle Commande Groupée Bureau */}
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-950 p-6 text-white shadow-xl sm:p-8">
+          <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-primary-500/20 blur-3xl pointer-events-none" />
+          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+            <div className="space-y-2 max-w-xl">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-primary-500/20 px-3 py-1 text-xs font-bold text-primary-300 ring-1 ring-inset ring-primary-500/30">
+                <Users size={13} />
+                <span>Nouveau · Pause Déjeuner & Bureau</span>
+              </div>
+              <h2 className="text-lg sm:text-2xl font-black tracking-tight text-white">
+                Commandez ensemble entre collègues ou amis
+              </h2>
+              <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                Partagez un lien en 1 clic sur WhatsApp : chacun choisit son plat sur son téléphone, la cuisine prépare des boîtes repas étiquetées à chaque prénom, et l'application calcule automatiquement la quote-part Wave / Orange Money de chacun !
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <Button
+                onClick={() => setGroupModalOpen(true)}
+                className="shadow-md text-xs sm:text-sm py-3 px-5 font-bold"
+              >
+                <Users size={16} />
+                <span>Lancer un salon groupé</span>
+              </Button>
+            </div>
+          </div>
+        </section>
+
         {/* Categories — horizontal scroll */}
         {catNames.length > 1 && (
           <section>
@@ -278,6 +309,12 @@ export default function StoreHome() {
           </p>
         )}
       </div>
+
+      <GroupOrderModal
+        open={groupModalOpen}
+        onClose={() => setGroupModalOpen(false)}
+        slug={slug}
+      />
     </div>
   );
 }

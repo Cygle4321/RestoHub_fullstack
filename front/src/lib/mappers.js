@@ -125,3 +125,60 @@ export function fmt(n) {
   if (n == null || Number.isNaN(Number(n))) return "—";
   return Number(n).toLocaleString("fr-FR") + " FCFA";
 }
+
+/** Détection & analyse d'une commande groupée */
+export function parseItemParticipant(rawName) {
+  if (!rawName) return { cleanName: "", participant: null };
+  const match = rawName.match(/^(.*?)\s*\[(?:👤\s*)?([^\]]+)\]$/);
+  if (match) {
+    return {
+      cleanName: match[1].trim(),
+      participant: match[2].trim(),
+    };
+  }
+  return { cleanName: rawName, participant: null };
+}
+
+export function isGroupOrder(order) {
+  if (!order) return false;
+  if (order.is_group_order || order.group_code) return true;
+  if (order.notes && (order.notes.toLowerCase().includes("commande groupée") || order.notes.includes("GRP-"))) return true;
+  return (order.items || []).some((it) => {
+    if (!it.name) return false;
+    return Boolean(parseItemParticipant(it.name).participant);
+  });
+}
+
+export function extractGroupCode(order) {
+  if (!order) return null;
+  if (order.group_code) return order.group_code;
+  const match = (order.notes || "").match(/GRP-[A-Z0-9]+/i);
+  if (match) return match[0].toUpperCase();
+  return null;
+}
+
+export function getGroupOrderParticipants(order) {
+  if (!order || !order.items) return [];
+  const participants = new Set();
+  order.items.forEach((it) => {
+    const { participant } = parseItemParticipant(it.name);
+    if (participant) participants.add(participant);
+  });
+  return Array.from(participants);
+}
+
+export function groupOrderItemsByParticipant(items) {
+  const grouped = {};
+  const ungrouped = [];
+  (items || []).forEach((it) => {
+    const { cleanName, participant } = parseItemParticipant(it.name);
+    if (participant) {
+      if (!grouped[participant]) grouped[participant] = [];
+      grouped[participant].push({ ...it, cleanName });
+    } else {
+      ungrouped.push({ ...it, cleanName });
+    }
+  });
+  return { grouped, ungrouped };
+}
+

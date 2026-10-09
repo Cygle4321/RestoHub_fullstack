@@ -26,9 +26,11 @@ export const storeApi = {
         delivery_zone_id: payload.delivery_zone_id || payload.zoneId,
         payment_method: mapPaymentMethod(payload.payment_method || payload.payment),
         promo_code: payload.promo_code || payload.promoCode,
+        group_code: payload.group_code || payload.groupCode,
         notes: payload.notes,
         items: (payload.items || []).map((it) => ({
           product_id: it.product_id || it.id,
+          name: it.name,
           quantity: it.quantity || it.qty || 1,
           options: it.options,
           supplements: it.supplements,
@@ -72,6 +74,27 @@ export const storeApi = {
       ...data,
       order: data.order ? mapOrder(data.order) : null,
     };
+  },
+
+  // ---------- Commande Groupée Collaborative (Salons) ----------
+  createGroup: async (slug, payload) => {
+    return apiClient.post(`/store/${slug}/group`, payload, { auth: false });
+  },
+
+  getGroup: async (slug, code) => {
+    return apiClient.get(`/store/${slug}/group/${code}`, { auth: false });
+  },
+
+  addGroupItem: async (slug, code, payload) => {
+    return apiClient.post(`/store/${slug}/group/${code}/items`, payload, { auth: false });
+  },
+
+  removeGroupItem: async (slug, code, itemId) => {
+    return apiClient.delete(`/store/${slug}/group/${code}/items/${itemId}`, { auth: false });
+  },
+
+  toggleGroupLock: async (slug, code, isLocked) => {
+    return apiClient.patch(`/store/${slug}/group/${code}/lock`, { is_locked: isLocked }, { auth: false });
   },
 };
 

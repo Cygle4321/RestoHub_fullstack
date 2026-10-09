@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\Restaurant\SupportController;
 use App\Http\Controllers\Api\Restaurant\TeamController;
 use App\Http\Controllers\Api\Restaurant\SecurityController;
 use App\Http\Controllers\Api\Store\StoreController;
+use App\Http\Controllers\Api\Store\GroupOrderController;
 use App\Http\Controllers\Api\Webhook\FedaPayWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -71,6 +72,15 @@ Route::prefix('store/{slug}')->group(function () {
     Route::get('track', [StoreController::class, 'track']);
     Route::post('reviews', [StoreController::class, 'storeReview']);
     Route::get('payment/{transactionId}', [StoreController::class, 'payment']);
+
+    // Salons de commande groupée
+    Route::prefix('group')->group(function () {
+        Route::post('/', [GroupOrderController::class, 'create']);
+        Route::get('{code}', [GroupOrderController::class, 'show']);
+        Route::post('{code}/items', [GroupOrderController::class, 'addItem']);
+        Route::delete('{code}/items/{itemId}', [GroupOrderController::class, 'removeItem']);
+        Route::patch('{code}/lock', [GroupOrderController::class, 'toggleLock']);
+    });
 });
 
 // ---------- Restaurant dashboard (owner / staff) ----------

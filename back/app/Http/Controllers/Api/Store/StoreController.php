@@ -12,6 +12,7 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Promotion;
+use App\Models\GroupOrder;
 use App\Models\Restaurant;
 use App\Services\FedaPayService;
 use App\Services\RestaurantNotifier;
@@ -159,9 +160,11 @@ class StoreController extends Controller
             'delivery_zone_id' => ['nullable', 'exists:delivery_zones,id'],
             'payment_method' => ['required', 'in:mobile_money,card,cash,fedapay'],
             'promo_code' => ['nullable', 'string'],
+            'group_code' => ['nullable', 'string', 'max:30'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.name' => ['nullable', 'string', 'max:255'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.options' => ['nullable', 'array'],
             'items.*.supplements' => ['nullable', 'array'],
@@ -213,6 +216,7 @@ class StoreController extends Controller
 
                 $lineItems[] = [
                     'product' => $product,
+                    'custom_name' => $row['name'] ?? null,
                     'quantity' => (int) $row['quantity'],
                     'unit_price' => $unit,
                     'line_total' => $lineTotal,
@@ -289,11 +293,24 @@ class StoreController extends Controller
                 ],
             ]);
 
+            if (!empty($data['group_code'])) {
+                $groupOrder = GroupOrder::where('restaurant_id', $restaurant->id)
+                    ->where('code', strtoupper(trim($data['group_code'])))
+                    ->first();
+                if ($groupOrder) {
+                    $groupOrder->update([
+                        'order_id' => $order->id,
+                        'status' => 'completed',
+                        'is_locked' => true,
+                    ]);
+                }
+            }
+
             foreach ($lineItems as $li) {
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $li['product']->id,
-                    'name' => $li['product']->name,
+                    'name' => !empty($li['custom_name']) ? $li['custom_name'] : $li['product']->name,
                     'unit_price' => $li['unit_price'],
                     'quantity' => $li['quantity'],
                     'line_total' => $li['line_total'],

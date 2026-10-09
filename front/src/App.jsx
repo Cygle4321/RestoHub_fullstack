@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet, Navigate, useParams } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { ToastProvider, Spinner } from "./components/ui";
 import { CartProvider } from "./store/CartContext";
@@ -44,6 +44,7 @@ const Cart = lazy(() => import("./pages/store/Cart"));
 const Checkout = lazy(() => import("./pages/store/Checkout"));
 const OrderConfirmation = lazy(() => import("./pages/store/OrderConfirmation"));
 const OrderTracking = lazy(() => import("./pages/store/OrderTracking"));
+const GroupOrder = lazy(() => import("./pages/store/GroupOrder"));
 
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminRestaurants = lazy(() => import("./pages/admin/AdminRestaurants"));
@@ -77,6 +78,11 @@ function RootLayout() {
   );
 }
 
+function RedirectGroup() {
+  const { code } = useParams();
+  return <Navigate to={code ? `/store/group/${code}` : "/store/group"} replace />;
+}
+
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
@@ -90,6 +96,8 @@ const router = createBrowserRouter([
       { path: "/terms", element: <Terms /> },
       { path: "/privacy", element: <Privacy /> },
       { path: "/onboarding", element: <Onboarding /> },
+      { path: "/group", element: <RedirectGroup /> },
+      { path: "/group/:code", element: <RedirectGroup /> },
 
       // Restaurant dashboard — owner | staff
       {
@@ -134,6 +142,8 @@ const router = createBrowserRouter([
           { path: "checkout", element: <Checkout /> },
           { path: "confirmation", element: <OrderConfirmation /> },
           { path: "track", element: <OrderTracking /> },
+          { path: "group", element: <GroupOrder /> },
+          { path: "group/:code", element: <GroupOrder /> },
         ],
       },
       {
@@ -147,6 +157,8 @@ const router = createBrowserRouter([
           { path: "checkout", element: <Checkout /> },
           { path: "confirmation", element: <OrderConfirmation /> },
           { path: "track", element: <OrderTracking /> },
+          { path: "group", element: <GroupOrder /> },
+          { path: "group/:code", element: <GroupOrder /> },
         ],
       },
 

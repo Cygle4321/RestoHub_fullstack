@@ -56,6 +56,11 @@ class Restaurant extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function groupOrders(): HasMany
+    {
+        return $this->hasMany(GroupOrder::class);
+    }
+
     public function customers(): HasMany
     {
         return $this->hasMany(Customer::class);

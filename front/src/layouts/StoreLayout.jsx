@@ -26,6 +26,7 @@ function StoreLayoutInner() {
     location.pathname.endsWith("/cart") ||
     location.pathname.endsWith("/checkout") ||
     location.pathname.includes("/product/") ||
+    location.pathname.includes("/group") ||
     location.pathname.endsWith("/confirmation");
 
   const openLabel = !restaurant ? "…" : restaurant.is_open ? "Ouvert aujourd'hui" : "Fermé";
@@ -117,6 +118,7 @@ function StoreLayoutInner() {
               {[
                 { to: `/store/${slug}`, label: "Accueil" },
                 { to: `/store/${slug}/menu`, label: "Menu" },
+                { to: `/store/${slug}/group/GRP-101`, label: "Commande groupée" },
                 { to: `/store/${slug}/track`, label: "Suivre" },
               ].map((item) => (
                 <Link

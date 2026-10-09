@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bike, Store, Smartphone, CreditCard, Banknote, ShoppingBag, Loader2, CheckCircle2 } from "lucide-react";
+import { Bike, Store, Smartphone, CreditCard, Banknote, ShoppingBag, Loader2, CheckCircle2, Users } from "lucide-react";
 import { Card, CardHeader, Button, Input, Textarea, Select, EmptyState, useToast } from "../../components/ui";
 import { useCart } from "../../store/CartContext";
 import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
-import { fmt } from "../../lib/mappers";
+import { fmt, parseItemParticipant } from "../../lib/mappers";
 import { computeDiscount } from "../../lib/discount";
 import SEO from "../../components/common/SEO";
 
@@ -18,10 +18,16 @@ export default function Checkout() {
   const promoCode = state?.promoCode || "";
   const promo = state?.promo || null;
 
-  const [name, setName] = useState("");
+  const isGroupOrder = Boolean(state?.isGroupOrder);
+  const groupCode = state?.groupCode || "";
+  const hostName = state?.hostName || "";
+  const groupNotes = state?.groupNotes || "";
+
+  const [name, setName] = useState(hostName || "");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+  const [customerNotes, setCustomerNotes] = useState(groupNotes || "");
   const [zone, setZone] = useState(zones[0]?.id ?? "");
   const [mode, setMode] = useState("Livraison");
   const [payment, setPayment] = useState("Mobile Money");
@@ -79,11 +85,14 @@ export default function Checkout() {
         email,
         mode,
         address,
+        notes: customerNotes,
         zoneId: selectedZone?.id,
         payment,
         promoCode,
+        group_code: isGroupOrder ? groupCode : undefined,
         items: items.map((it) => ({
           product_id: it.id,
+          name: it.name,
           quantity: it.qty,
           options: it.options,
           supplements: it.supplements,
@@ -116,17 +125,41 @@ export default function Checkout() {
   return (
     <div className="mx-auto max-w-5xl px-4 pb-8 pt-4">
       <SEO title="Finaliser ma commande" noindex />
-      <h1 className="text-xl font-bold text-zinc-900">Commande</h1>
+      <h1 className="text-xl font-bold text-zinc-900">Finaliser la commande</h1>
+
+      {isGroupOrder && (
+        <div className="mt-4 rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-950 p-5 text-white shadow-xl sm:flex sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-500/20 text-primary-400 ring-1 ring-primary-500/30">
+              <Users size={22} />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm">Commande Groupée Bureau</span>
+                <span className="rounded-lg bg-white/20 px-2 py-0.5 font-mono text-xs font-bold text-white tracking-wider">
+                  {groupCode}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-zinc-300">
+                Organisée par <strong>{hostName}</strong> · Le restaurant étiquettera individuellement chaque boîte repas.
+              </p>
+            </div>
+          </div>
+          <span className="mt-3 inline-flex items-center self-start sm:self-auto rounded-full bg-primary-500/20 px-3 py-1 text-xs font-bold text-primary-300 ring-1 ring-inset ring-primary-500/30 sm:mt-0">
+            Livraison unique groupée
+          </span>
+        </div>
+      )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px]">
         {/* Formulaire */}
         <div className="space-y-4">
           {/* Vos informations */}
           <Card>
-            <CardHeader title="Vos informations" subtitle="Pour vous contacter au sujet de la commande" />
+            <CardHeader title="Vos informations" subtitle="Pour vous contacter au sujet de la livraison" />
             <div className="grid gap-4 p-5 sm:grid-cols-2">
               <div>
-                <Input label="Nom complet" placeholder="Ex : Aminata Koné" value={name} onChange={(e) => setName(e.target.value)} />
+                <Input label="Nom complet (Organisateur)" placeholder="Ex : Aminata Koné" value={name} onChange={(e) => setName(e.target.value)} />
                 {errors.name && <p className="mt-1 text-xs font-medium text-danger-600">{errors.name}</p>}
               </div>
               <div>
@@ -135,6 +168,15 @@ export default function Checkout() {
               </div>
               <div className="sm:col-span-2">
                 <Input label="Email (optionnel)" type="email" placeholder="vous@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className="sm:col-span-2">
+                <Textarea
+                  label="Instructions pour la cuisine & livraison"
+                  rows={2}
+                  placeholder="Ex : Répartition des sacs, code de la porte, sonnette…"
+                  value={customerNotes}
+                  onChange={(e) => setCustomerNotes(e.target.value)}
+                />
               </div>
             </div>
           </Card>
@@ -265,12 +307,22 @@ export default function Checkout() {
                   {promo.type === "fixed" && <span>−{fmt(promo.value)}</span>}
                 </div>
               )}
-              {items.map((it) => (
-                <div key={it.id} className="flex items-center justify-between gap-2">
-                  <span className="min-w-0 truncate text-zinc-600">{it.qty} × {it.name}</span>
-                  <span className="shrink-0 font-medium text-zinc-900">{fmt(it.price * it.qty)}</span>
-                </div>
-              ))}
+              {items.map((it) => {
+                const { cleanName, participant } = parseItemParticipant(it.name);
+                return (
+                  <div key={it.id} className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex items-center gap-1.5 truncate text-zinc-600">
+                      <span className="truncate">{it.qty} × {cleanName}</span>
+                      {participant && (
+                        <span className="shrink-0 rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-700 ring-1 ring-inset ring-zinc-200">
+                          {participant}
+                        </span>
+                      )}
+                    </div>
+                    <span className="shrink-0 font-medium text-zinc-900">{fmt(it.price * it.qty)}</span>
+                  </div>
+                );
+              })}
               <div className="flex justify-between border-t border-zinc-100 pt-3">
                 <span className="text-zinc-500">Sous-total</span>
                 <span className="font-medium text-zinc-900">{fmt(total)}</span>
