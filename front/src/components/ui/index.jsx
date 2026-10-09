@@ -40,7 +40,7 @@ export function statusVariant(status) {
 export function Card({ children, className = "", hover = false }) {
   return (
     <div
-      className={`rounded-2xl border border-zinc-200/80 bg-white shadow-card ${
+      className={`min-w-0 max-w-full rounded-2xl border border-zinc-200/80 bg-white shadow-card ${
         hover ? "transition-shadow duration-200 hover:shadow-elevated" : ""
       } ${className}`}
     >
@@ -51,12 +51,12 @@ export function Card({ children, className = "", hover = false }) {
 
 export function CardHeader({ title, subtitle, action, className = "" }) {
   return (
-    <div className={`flex items-start justify-between gap-4 border-b border-zinc-100 px-5 py-4 ${className}`}>
+    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 px-4 sm:px-5 py-3.5 sm:py-4 ${className}`}>
       <div className="min-w-0">
-        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-900">{title}</h3>
-        {subtitle && <p className="mt-0.5 text-xs text-zinc-500">{subtitle}</p>}
+        <h3 className="text-[13px] font-semibold tracking-tight text-zinc-900 truncate">{title}</h3>
+        {subtitle && <p className="mt-0.5 text-xs text-zinc-500 truncate">{subtitle}</p>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="shrink-0 max-w-full overflow-x-auto scrollbar-none">{action}</div>}
     </div>
   );
 }
@@ -251,21 +251,21 @@ export function Modal({ open, onClose, title, children, footer, size = "md" }) {
   if (!open) return null;
   const sizes = { sm: "max-w-md", md: "max-w-lg", lg: "max-w-2xl" };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-[2px]" onClick={onClose} />
-      <div className={`relative w-full ${sizes[size]} overflow-hidden rounded-2xl bg-white shadow-xl`}>
-        <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
-          <h3 className="text-sm font-semibold text-zinc-900">{title}</h3>
+      <div className={`relative flex max-h-[92vh] w-full ${sizes[size]} flex-col overflow-hidden rounded-2xl bg-white shadow-xl`}>
+        <div className="flex shrink-0 items-center justify-between border-b border-zinc-100 px-4 sm:px-5 py-3.5 sm:py-4">
+          <h3 className="truncate pr-2 text-sm font-semibold text-zinc-900">{title}</h3>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
+            className="shrink-0 rounded-lg p-1.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-600"
           >
             <X size={18} />
           </button>
         </div>
-        <div className="px-5 py-4">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 sm:px-5 py-4">{children}</div>
         {footer && (
-          <div className="flex justify-end gap-3 border-t border-zinc-100 px-5 py-3.5">{footer}</div>
+          <div className="flex shrink-0 flex-wrap justify-end gap-2 sm:gap-3 border-t border-zinc-100 bg-zinc-50/50 px-4 sm:px-5 py-3 sm:py-3.5">{footer}</div>
         )}
       </div>
     </div>
@@ -362,34 +362,36 @@ export function SearchInput({ value, onChange, placeholder = "Rechercher…", cl
   );
 }
 
-export function Tabs({ tabs, active, onChange }) {
+export function Tabs({ tabs, active, onChange, className = "" }) {
   return (
-    <div className="inline-flex gap-0.5 rounded-xl bg-zinc-100/80 p-1">
-      {tabs.map((t) => (
-        <button
-          key={t}
-          onClick={() => onChange(t)}
-          className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-semibold transition ${
-            active === t
-              ? "bg-white text-zinc-900 shadow-xs"
-              : "text-zinc-500 hover:text-zinc-800"
-          }`}
-        >
-          {t}
-        </button>
-      ))}
+    <div className={`flex max-w-full overflow-x-auto scrollbar-none py-0.5 ${className}`}>
+      <div className="inline-flex shrink-0 gap-0.5 rounded-xl bg-zinc-100/80 p-1">
+        {tabs.map((t) => (
+          <button
+            key={t}
+            onClick={() => onChange(t)}
+            className={`whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-semibold transition ${
+              active === t
+                ? "bg-white text-zinc-900 shadow-xs"
+                : "text-zinc-500 hover:text-zinc-800"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
 export function PageHeader({ title, subtitle, actions }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-zinc-500">{subtitle}</p>}
+    <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 break-words">{title}</h1>
+        {subtitle && <p className="mt-1 text-xs sm:text-sm text-zinc-500">{subtitle}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
     </div>
   );
 }

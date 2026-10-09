@@ -423,12 +423,14 @@ export default function AdminDashboard() {
                     {r.city ? ` · ${r.city}` : ""}
                   </p>
                 </div>
-                <Badge variant={r.plan === "Premium" ? "primary" : r.plan === "Business" ? "info" : "neutral"}>
-                  {r.plan}
-                </Badge>
-                <Badge variant={r.status === "Actif" ? "success" : "danger"} dot>
-                  {r.status || "Actif"}
-                </Badge>
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5 shrink-0">
+                  <Badge variant={r.plan === "Premium" ? "primary" : r.plan === "Business" ? "info" : "neutral"} className="shrink-0">
+                    {r.plan}
+                  </Badge>
+                  <Badge variant={r.status === "Actif" ? "success" : "danger"} dot className="shrink-0">
+                    {r.status || "Actif"}
+                  </Badge>
+                </div>
               </Link>
             </li>
           ))}

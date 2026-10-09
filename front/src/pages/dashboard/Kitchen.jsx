@@ -55,6 +55,7 @@ export default function Kitchen() {
   const [lastSync, setLastSync] = useState(null);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mobileTab, setMobileTab] = useState("all");
   const [, forceTick] = useState(0);
 
   const load = useCallback(
@@ -224,14 +225,50 @@ export default function Kitchen() {
         </div>
       </header>
 
+      {/* Mobile column selector */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-none px-3 pt-3 md:hidden">
+        <button
+          onClick={() => setMobileTab("all")}
+          className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
+            mobileTab === "all"
+              ? "bg-zinc-900 text-white shadow-xs"
+              : "border border-zinc-200 bg-white text-zinc-600"
+          }`}
+        >
+          Toutes ({activeOrders.length})
+        </button>
+        {COLUMNS.map((col) => {
+          const count = byStatus(col.key).length;
+          const isCurrent = mobileTab === col.key;
+          return (
+            <button
+              key={col.key}
+              onClick={() => setMobileTab(col.key)}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition ${
+                isCurrent
+                  ? "text-white shadow-xs"
+                  : "border border-zinc-200 bg-white text-zinc-600"
+              }`}
+              style={isCurrent ? { backgroundColor: col.accent } : undefined}
+            >
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: isCurrent ? "#ffffff" : col.accent }} />
+              {col.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
       {/* Board */}
       <div className="grid grid-cols-1 gap-3 p-3 md:grid-cols-2 xl:grid-cols-4 xl:p-4">
         {COLUMNS.map((col) => {
           const list = byStatus(col.key);
+          const isVisibleOnMobile = mobileTab === "all" || mobileTab === col.key;
           return (
             <section
               key={col.key}
-              className="flex max-h-[calc(100vh-150px)] min-h-[340px] flex-col overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-50"
+              className={`max-h-[calc(100vh-150px)] min-h-[300px] flex-col overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-50 ${
+                isVisibleOnMobile ? "flex" : "hidden md:flex"
+              }`}
             >
               {/* En-tête colonne */}
               <div

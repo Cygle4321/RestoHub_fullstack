@@ -53,10 +53,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: clip;
+    max-width: 100vw;
   }
 
   body {
     @apply bg-[#f7f7f8] text-gray-900 antialiased;
+    overflow-x: clip;
+    max-width: 100vw;
   }
 
   /* Focus visible — anneau solide primary-600 (5.1:1 sur blanc ✅) */
@@ -94,5 +98,12 @@
   }
   .text-balance {
     text-wrap: balance;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

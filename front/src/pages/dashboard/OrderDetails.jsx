@@ -102,9 +102,9 @@ export default function OrderDetails() {
                   const unitPrice = it.price ?? 0;
                   return (
                     <li key={`${it.name}-${i}`} className="px-4 py-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-zinc-800"><span className="font-semibold text-zinc-900">{it.qty}×</span> {it.name}</p>
-                        <p className="text-sm font-medium text-zinc-900">{fmt(unitPrice * it.qty)}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="min-w-0 flex-1 truncate text-sm text-zinc-800"><span className="font-semibold text-zinc-900">{it.qty}×</span> {it.name}</p>
+                        <p className="shrink-0 text-sm font-medium text-zinc-900">{fmt(unitPrice * it.qty)}</p>
                       </div>
                       {((it.options?.length || 0) > 0 || (it.supplements?.length || 0) > 0) && (
                         <p className="mt-0.5 text-xs text-zinc-400">

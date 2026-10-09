@@ -10,7 +10,7 @@ import { generateRestaurantSchema } from "../../lib/seoSchemas";
 function ProductCard({ product, onAdd }) {
   const { slug } = useStore();
   return (
-    <Card className="group overflow-hidden" hover>
+    <Card className="group flex flex-col overflow-hidden" hover>
       <Link to={`/store/${slug}/product/${product.id}`} className="block">
         <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br from-primary-50 to-orange-50 text-primary-300 transition group-hover:from-primary-100 group-hover:to-orange-100">
           {product.image ? (
@@ -25,20 +25,20 @@ function ProductCard({ product, onAdd }) {
           )}
         </div>
       </Link>
-      <div className="p-3.5">
+      <div className="flex flex-1 flex-col justify-between gap-2 p-2.5 sm:p-3.5">
         <Link to={`/store/${slug}/product/${product.id}`}>
-          <h3 className="line-clamp-1 text-[13px] font-semibold text-zinc-900 transition group-hover:text-primary-700">
+          <h3 className="line-clamp-1 text-xs font-semibold text-zinc-900 transition group-hover:text-primary-700 sm:text-[13px]">
             {product.name}
           </h3>
         </Link>
-        <div className="mt-2 flex items-center justify-between gap-2">
-          <p className="text-sm font-bold text-zinc-900">{fmt(product.price)}</p>
+        <div className="flex items-center justify-between gap-1.5 pt-0.5">
+          <p className="min-w-0 truncate text-xs font-bold text-zinc-900 sm:text-sm">{fmt(product.price)}</p>
           <button
             onClick={() => onAdd(product)}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-500 text-white shadow-sm transition hover:bg-primary-600 hover:scale-105 active:scale-95"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary-500 text-white shadow-sm transition hover:scale-105 hover:bg-primary-600 active:scale-95 sm:h-8 sm:w-8"
             aria-label={`Ajouter ${product.name}`}
           >
-            <Plus size={16} strokeWidth={2.5} />
+            <Plus size={15} strokeWidth={2.5} />
           </button>
         </div>
       </div>
@@ -107,25 +107,25 @@ export default function StoreHome() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),_transparent_50%)]" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
         <div className="absolute bottom-5 left-0 right-0 mx-auto max-w-5xl px-4">
-          <div className="flex items-end gap-4">
+          <div className="flex items-end gap-3 sm:gap-4">
             {restaurant.logo ? (
               <img
                 src={restaurant.logo}
                 alt={`Logo ${restaurant.name}`}
-                className="h-16 w-16 shrink-0 rounded-2xl bg-white object-cover shadow-float ring-4 ring-white/20 sm:h-20 sm:w-20"
+                className="h-14 w-14 shrink-0 rounded-2xl bg-white object-cover shadow-float ring-4 ring-white/20 sm:h-20 sm:w-20"
               />
             ) : (
               <div
-                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-float ring-4 ring-white/20 sm:h-20 sm:w-20"
+                className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-lg font-bold text-white shadow-float ring-4 ring-white/20 sm:h-20 sm:w-20 sm:text-xl"
                 style={{ backgroundColor: restaurant.color || "#14b8a6" }}
               >
                 {initialsOf(restaurant.name)}
               </div>
             )}
-            <div className="pb-1 text-white">
-              <h1 className="text-xl font-bold tracking-tight sm:text-2xl">{restaurant.name}</h1>
+            <div className="min-w-0 flex-1 pb-1 text-white">
+              <h1 className="truncate text-lg font-bold tracking-tight sm:text-2xl">{restaurant.name}</h1>
               {restaurant.description && (
-                <p className="mt-0.5 line-clamp-1 text-sm text-white/70">{restaurant.description}</p>
+                <p className="mt-0.5 line-clamp-1 text-xs text-white/70 sm:text-sm">{restaurant.description}</p>
               )}
             </div>
           </div>

@@ -213,7 +213,7 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      <div className="lg:pl-[260px]">
+      <div className="min-w-0 max-w-full lg:pl-[260px]">
         <header className="sticky top-0 z-20 flex h-[60px] items-center gap-4 border-b border-zinc-200/80 bg-white/80 px-4 backdrop-blur-md sm:px-6">
           <button
             className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 lg:hidden"
@@ -221,7 +221,7 @@ export default function AdminLayout() {
           >
             <Menu size={20} />
           </button>
-          <p className="text-[13px] font-semibold text-zinc-500">
+          <p className="min-w-0 truncate text-[13px] font-semibold text-zinc-500">
             Administration de la plateforme
           </p>
           <div className="ml-auto flex items-center gap-2.5">
@@ -292,7 +292,7 @@ export default function AdminLayout() {
             </button>
           </div>
         </header>
-        <main className="p-4 sm:p-6 lg:p-8">
+        <main className="min-w-0 max-w-full p-4 sm:p-6 lg:p-8">
           <EmailVerificationBanner />
           <Outlet />
         </main>

@@ -136,9 +136,9 @@ export default function OrderConfirmation() {
         </div>
         <div className="mt-3 space-y-2 text-sm">
           {order.items.map((i) => (
-            <div key={i.name} className="flex justify-between">
-              <span className="text-gray-600">{i.qty} × {i.name}</span>
-              <span className="font-medium text-gray-900">{fmt(i.price * i.qty)}</span>
+            <div key={i.name} className="flex items-center justify-between gap-2">
+              <span className="min-w-0 truncate text-gray-600">{i.qty} × {i.name}</span>
+              <span className="shrink-0 font-medium text-gray-900">{fmt(i.price * i.qty)}</span>
             </div>
           ))}
           <div className="flex justify-between border-t border-gray-100 pt-2">

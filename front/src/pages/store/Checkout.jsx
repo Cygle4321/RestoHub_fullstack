@@ -266,9 +266,9 @@ export default function Checkout() {
                 </div>
               )}
               {items.map((it) => (
-                <div key={it.id} className="flex justify-between gap-2">
-                  <span className="text-zinc-600">{it.qty} × {it.name}</span>
-                  <span className="font-medium text-zinc-900">{fmt(it.price * it.qty)}</span>
+                <div key={it.id} className="flex items-center justify-between gap-2">
+                  <span className="min-w-0 truncate text-zinc-600">{it.qty} × {it.name}</span>
+                  <span className="shrink-0 font-medium text-zinc-900">{fmt(it.price * it.qty)}</span>
                 </div>
               ))}
               <div className="flex justify-between border-t border-zinc-100 pt-3">

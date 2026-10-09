@@ -204,26 +204,28 @@ export default function Delivery() {
                       <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500"><MapPin size={14} /> {o.address}</p>
                       <p className="mt-1 text-sm font-medium text-gray-600">Total : <span className="font-bold text-gray-900">{fmt(o.total)}</span></p>
                     </div>
-                    <div className="flex items-end gap-2">
+                    <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                       {o.driver?.name ? (
-                        <Button variant="secondary" onClick={() => unassign(o)} disabled={busy}>
+                        <Button variant="secondary" onClick={() => unassign(o)} disabled={busy} className="w-full sm:w-auto">
                           {busy ? <Loader2 size={16} className="animate-spin" /> : <UserX size={16} />} Retirer le livreur
                         </Button>
                       ) : (
                         <>
-                          <Select
-                            value={pendingDrivers[id] || ""}
-                            onChange={(e) => selectDriver(id, e.target.value)}
-                            className="w-56"
-                          >
-                            <option value="">Assigner un livreur…</option>
-                            {driversList.map((d) => (
-                              <option key={d.id} value={d.id} disabled={d.status === "en_course"}>
-                                {d.name} ({DRIVER_STATUS_UI[d.status] || d.status})
-                              </option>
-                            ))}
-                          </Select>
-                          <Button onClick={() => assign(o, pendingDrivers[id])} disabled={busy}>
+                          <div className="min-w-0 flex-1 sm:w-56 sm:flex-none">
+                            <Select
+                              value={pendingDrivers[id] || ""}
+                              onChange={(e) => selectDriver(id, e.target.value)}
+                              className="w-full"
+                            >
+                              <option value="">Assigner un livreur…</option>
+                              {driversList.map((d) => (
+                                <option key={d.id} value={d.id} disabled={d.status === "en_course"}>
+                                  {d.name} ({DRIVER_STATUS_UI[d.status] || d.status})
+                                </option>
+                              ))}
+                            </Select>
+                          </div>
+                          <Button onClick={() => assign(o, pendingDrivers[id])} disabled={busy} className="shrink-0">
                             {busy ? <Loader2 size={16} className="animate-spin" /> : <Truck size={16} />} Assigner
                           </Button>
                         </>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { ShoppingBag, Clock, MapPin, Search, Menu as MenuIcon, X, Phone, Store } from "lucide-react";
 import { EmptyState } from "../components/ui";
 import { StoreProvider, useStore, initialsOf } from "../store/StoreContext";
@@ -17,9 +17,16 @@ function StoreLayoutInner() {
   const { items } = useCart();
   const { slug, error, restaurant, todayHours } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const count = items.reduce((s, x) => s + x.qty, 0);
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const hideStickyCart =
+    location.pathname.endsWith("/cart") ||
+    location.pathname.endsWith("/checkout") ||
+    location.pathname.includes("/product/") ||
+    location.pathname.endsWith("/confirmation");
 
   const openLabel = !restaurant ? "…" : restaurant.is_open ? "Ouvert aujourd'hui" : "Fermé";
   const hours = todayHours ? `${openLabel} · ${todayHours}` : openLabel;
@@ -84,13 +91,21 @@ function StoreLayoutInner() {
                 {initialsOf(restaurant?.name)}
               </span>
             )}
-            <div className="hidden leading-tight sm:block">
-              <p className="text-sm font-bold tracking-tight text-zinc-900">{restaurant?.name || "…"}</p>
+            <div className="leading-tight min-w-0 max-w-[130px] sm:max-w-none">
+              <p className="truncate text-sm font-bold tracking-tight text-zinc-900">{restaurant?.name || "…"}</p>
               {restaurant?.description && (
-                <p className="line-clamp-1 text-[11px] text-zinc-400">{restaurant.description}</p>
+                <p className="hidden line-clamp-1 text-[11px] text-zinc-400 sm:block">{restaurant.description}</p>
               )}
             </div>
           </Link>
+
+          {/* Mobile menu backdrop overlay */}
+          {menuOpen && (
+            <div
+              className="fixed inset-0 top-16 z-10 bg-zinc-900/30 backdrop-blur-[1px] md:hidden"
+              onClick={() => setMenuOpen(false)}
+            />
+          )}
 
           {/* Desktop nav */}
           <nav
@@ -165,11 +180,11 @@ function StoreLayoutInner() {
       </footer>
 
       {/* Mobile sticky cart bar */}
-      {count > 0 && (
+      {count > 0 && !hideStickyCart && (
         <div className="fixed inset-x-0 bottom-0 z-30 p-3 md:hidden">
           <button
             onClick={() => navigate(`/store/${slug}/cart`)}
-            className="flex w-full items-center justify-between rounded-2xl bg-zinc-900 px-5 py-4 text-white shadow-float"
+            className="flex w-full items-center justify-between rounded-2xl bg-zinc-900 px-5 py-4 text-white shadow-float transition-transform active:scale-[0.99]"
           >
             <span className="flex items-center gap-2.5 text-sm font-semibold">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-500 text-xs font-bold">

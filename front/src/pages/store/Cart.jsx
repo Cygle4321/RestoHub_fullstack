@@ -132,18 +132,18 @@ export default function Cart() {
             <Card
               key={item.id}
               hover
-              className="flex items-center gap-4 p-3 transition hover:-translate-y-0.5 sm:p-4"
+              className="flex items-center gap-3 p-2.5 transition hover:-translate-y-0.5 sm:gap-4 sm:p-4"
             >
               <div className="relative shrink-0">
-                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-primary-50 text-primary-400 ring-1 ring-primary-100 sm:h-24 sm:w-24">
+                <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-primary-50 text-primary-400 ring-1 ring-primary-100 sm:h-24 sm:w-24">
                   {item.image ? (
                     <img src={item.image} alt={item.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   ) : (
-                    <UtensilsCrossed size={26} />
+                    <UtensilsCrossed size={24} />
                   )}
                 </div>
                 <span
-                  className="absolute -left-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white shadow-sm"
+                  className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm sm:-left-2 sm:-top-2 sm:h-6 sm:w-6 sm:text-[11px]"
                   style={{ backgroundColor: accent }}
                 >
                   {index + 1}
@@ -153,10 +153,10 @@ export default function Cart() {
               <div className="flex min-w-0 flex-1 flex-col self-stretch">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <h3 className="truncate text-sm font-bold text-zinc-900">{item.name}</h3>
-                    <p className="text-xs text-zinc-500">{fmt(item.price)} / unité</p>
+                    <h3 className="truncate text-xs font-bold text-zinc-900 sm:text-sm">{item.name}</h3>
+                    <p className="text-[11px] text-zinc-500 sm:text-xs">{fmt(item.price)} / unité</p>
                     {(item.options?.length > 0 || item.supplements?.length > 0) && (
-                      <p className="mt-0.5 line-clamp-2 text-[11px] text-zinc-400">
+                      <p className="mt-0.5 line-clamp-2 text-[10px] text-zinc-400 sm:text-[11px]">
                         {[
                           ...(item.options || []).map((o) => `${o.name}: ${o.choice}`),
                           ...(item.supplements || []).map((s) => `+ ${s.name}`),
@@ -166,32 +166,32 @@ export default function Cart() {
                   </div>
                   <button
                     onClick={() => remove(item.id)}
-                    className="rounded-lg p-2 text-danger-500 transition hover:bg-danger-50"
+                    className="shrink-0 rounded-lg p-1.5 text-danger-500 transition hover:bg-danger-50 sm:p-2"
                     aria-label={`Retirer ${item.name}`}
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={15} />
                   </button>
                 </div>
 
-                <div className="mt-auto flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 p-1">
+                <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+                  <div className="flex items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 p-0.5 sm:p-1">
                     <button
                       onClick={() => setQty(item.id, item.qty - 1)}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-zinc-600 shadow-sm transition hover:text-zinc-900"
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-zinc-600 shadow-sm transition hover:text-zinc-900 sm:h-7 sm:w-7"
                       aria-label="Diminuer"
                     >
-                      <Minus size={14} />
+                      <Minus size={13} />
                     </button>
-                    <span className="w-6 text-center text-sm font-bold">{item.qty}</span>
+                    <span className="w-5 text-center text-xs font-bold sm:w-6 sm:text-sm">{item.qty}</span>
                     <button
                       onClick={() => setQty(item.id, item.qty + 1)}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-zinc-600 shadow-sm transition hover:text-zinc-900"
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-zinc-600 shadow-sm transition hover:text-zinc-900 sm:h-7 sm:w-7"
                       aria-label="Augmenter"
                     >
-                      <Plus size={14} />
+                      <Plus size={13} />
                     </button>
                   </div>
-                  <span className="text-base font-extrabold text-zinc-900">{fmt(item.price * item.qty)}</span>
+                  <span className="shrink-0 text-sm font-extrabold text-zinc-900 sm:text-base">{fmt(item.price * item.qty)}</span>
                 </div>
               </div>
             </Card>

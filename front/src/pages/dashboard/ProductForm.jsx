@@ -211,7 +211,9 @@ export default function ProductForm() {
                 <div key={i} className="grid gap-3 rounded-lg border border-gray-200 p-4 sm:grid-cols-[1fr_2fr_auto] sm:items-end">
                   <Input label="Nom" value={opt.name} onChange={(e) => setOptions((o) => o.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} placeholder="Taille" />
                   <Input label="Choix (séparés par des virgules)" value={opt.choices} onChange={(e) => setOptions((o) => o.map((x, j) => (j === i ? { ...x, choices: e.target.value } : x)))} placeholder="33cl, 50cl" />
-                  <Button type="button" variant="ghost" className="!px-2 !text-danger-500" onClick={() => setOptions((o) => o.filter((_, j) => j !== i))} title="Supprimer"><Trash2 size={16} /></Button>
+                  <div className="flex justify-end sm:block">
+                    <Button type="button" variant="ghost" className="!px-2 !text-danger-500" onClick={() => setOptions((o) => o.filter((_, j) => j !== i))} title="Supprimer"><Trash2 size={16} /></Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -229,7 +231,9 @@ export default function ProductForm() {
                 <div key={i} className="grid gap-3 rounded-lg border border-gray-200 p-4 sm:grid-cols-[2fr_1fr_auto] sm:items-end">
                   <Input label="Nom" value={sup.name} onChange={(e) => setSupplements((s) => s.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} placeholder="Sauce piment" />
                   <Input label="Prix (FCFA)" type="number" min="0" value={sup.price} onChange={(e) => setSupplements((s) => s.map((x, j) => (j === i ? { ...x, price: e.target.value } : x)))} placeholder="250" />
-                  <Button type="button" variant="ghost" className="!px-2 !text-danger-500" onClick={() => setSupplements((s) => s.filter((_, j) => j !== i))} title="Supprimer"><Trash2 size={16} /></Button>
+                  <div className="flex justify-end sm:block">
+                    <Button type="button" variant="ghost" className="!px-2 !text-danger-500" onClick={() => setSupplements((s) => s.filter((_, j) => j !== i))} title="Supprimer"><Trash2 size={16} /></Button>
+                  </div>
                 </div>
               ))}
             </div>

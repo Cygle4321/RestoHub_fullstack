@@ -343,7 +343,7 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Main column */}
-      <div className="lg:pl-[260px]">
+      <div className="min-w-0 max-w-full lg:pl-[260px]">
         {/* Top bar */}
         <header className="sticky top-0 z-20 flex h-[60px] items-center gap-4 border-b border-zinc-200/80 bg-white/80 px-4 backdrop-blur-md sm:px-6">
           <button
@@ -496,7 +496,7 @@ export default function DashboardLayout() {
           </div>
         </header>
 
-        <main className="p-4 sm:p-6 lg:p-8">
+        <main className="min-w-0 max-w-full p-4 sm:p-6 lg:p-8">
           <EmailVerificationBanner />
           <Outlet />
         </main>

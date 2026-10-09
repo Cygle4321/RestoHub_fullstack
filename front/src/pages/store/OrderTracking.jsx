@@ -200,8 +200,8 @@ export default function OrderTracking() {
                   <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 text-primary-400">
                     <UtensilsCrossed size={18} />
                   </span>
-                  <span className="flex-1 text-gray-600">{i.qty} × {i.name}</span>
-                  <span className="font-medium text-gray-900">{fmt(i.price * i.qty)}</span>
+                  <span className="min-w-0 flex-1 truncate text-gray-600">{i.qty} × {i.name}</span>
+                  <span className="shrink-0 font-medium text-gray-900">{fmt(i.price * i.qty)}</span>
                 </div>
               ))}
               <div className="flex justify-between border-t border-gray-100 pt-2 text-base">

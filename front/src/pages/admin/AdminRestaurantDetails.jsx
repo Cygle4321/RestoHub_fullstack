@@ -114,7 +114,7 @@ export default function AdminRestaurantDetails() {
               </div>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             {status === "Suspendu" ? (
               <Button variant="secondary" onClick={() => handleStatus("active")} disabled={saving}>Réactiver</Button>
             ) : (

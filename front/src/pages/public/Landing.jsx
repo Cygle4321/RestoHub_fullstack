@@ -81,21 +81,21 @@ export default function Landing() {
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:py-28">
           <div>
             <Badge variant="primary" dot>Nouvelle plateforme 2026</Badge>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+            <h1 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
               Votre restaurant, <span className="text-primary-500">en ligne en 5 minutes</span>
             </h1>
-            <p className="mt-5 max-w-xl text-lg text-zinc-600">
+            <p className="mt-5 max-w-xl text-base sm:text-lg text-zinc-600">
               RestoHub vous donne un menu digital et un système de commande en ligne clé en main : commandes en temps réel,
               paiements Mobile Money, livraisons suivies et statistiques. Sans commission sur vos ventes.
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link to="/register">
-                <Button className="px-6 py-3 text-base">
+            <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+              <Link to="/register" className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto px-5 sm:px-6 py-3 text-sm sm:text-base">
                   Créer mon restaurant gratuitement <ArrowRight size={18} />
                 </Button>
               </Link>
-              <a href="#tarifs">
-                <Button variant="secondary" className="px-6 py-3 text-base">Voir les tarifs</Button>
+              <a href="#tarifs" className="w-full sm:w-auto">
+                <Button variant="secondary" className="w-full sm:w-auto px-5 sm:px-6 py-3 text-sm sm:text-base">Voir les tarifs</Button>
               </a>
             </div>
             <div className="mt-8 flex items-center gap-3 text-sm text-zinc-500">

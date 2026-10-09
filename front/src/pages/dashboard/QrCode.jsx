@@ -74,15 +74,15 @@ export default function QrCode() {
           <CardHeader title="Votre QR Code" subtitle={url} />
           <div className="flex flex-col items-center gap-6 p-8">
             {dataUrl ? (
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm" style={{ width: PX[size] + 32 }}>
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm" style={{ width: PX[size] + 32, maxWidth: "100%" }}>
                 <img src={dataUrl} alt={`QR Code ${resto?.name}`} className="block h-auto w-full" />
               </div>
             ) : (
               <div className="flex h-56 items-center justify-center"><Spinner label="Génération…" /></div>
             )}
-            <div className="text-center">
+            <div className="text-center min-w-0 max-w-full">
               <p className="font-bold text-gray-900">{resto?.name}</p>
-              <p className="text-xs text-gray-500">{url}</p>
+              <p className="text-xs text-gray-500 break-all">{url}</p>
             </div>
             <div className="flex flex-wrap items-end justify-center gap-3">
               <Select label="Taille" value={size} onChange={(e) => setSize(e.target.value)} className="w-28">

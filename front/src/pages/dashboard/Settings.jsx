@@ -223,11 +223,18 @@ export default function Settings() {
       <h1 className="text-2xl font-bold tracking-tight text-gray-900">Paramètres</h1>
 
       <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
-        <Card className="h-fit p-2">
-          <nav className="flex flex-col gap-1">
+        <Card className="h-fit p-1.5 sm:p-2">
+          <nav className="flex flex-row gap-1 overflow-x-auto scrollbar-none lg:flex-col">
             {TABS.map(({ id, icon: Icon }) => (
-              <button key={id} onClick={() => setTab(id)} className={`flex items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-left text-sm font-medium transition ${tab === id ? "bg-primary-50 text-primary-700" : "text-gray-600 hover:bg-gray-50"}`}>
-                <Icon size={16} /> {id}
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                  tab === id ? "bg-primary-50 font-semibold text-primary-700" : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <Icon size={16} className="shrink-0" />
+                <span className="whitespace-nowrap">{id}</span>
               </button>
             ))}
           </nav>

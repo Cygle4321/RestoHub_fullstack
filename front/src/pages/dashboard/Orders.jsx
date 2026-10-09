@@ -113,7 +113,7 @@ export default function Orders() {
       />
 
       {/* Status pills with counts */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 sm:flex-wrap">
         {["Toutes", ...orderStatuses].map((s) => {
           const active = status === s;
           const count = countFor(s);
@@ -121,7 +121,7 @@ export default function Orders() {
             <button
               key={s}
               onClick={() => setStatus(s)}
-              className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+              className={`inline-flex shrink-0 items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
                 active
                   ? "bg-zinc-900 text-white shadow-sm"
                   : "bg-white text-zinc-600 ring-1 ring-inset ring-zinc-200 hover:bg-zinc-50 hover:text-zinc-900"
@@ -141,19 +141,19 @@ export default function Orders() {
       </div>
 
       <Card>
-        <div className="flex flex-wrap items-center gap-3 border-b border-zinc-100 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-b border-zinc-100 p-4">
           <SearchInput
             value={query}
             onChange={setQuery}
             placeholder="Rechercher une commande ou un client…"
-            className="min-w-[240px] flex-1"
+            className="min-w-0 flex-1"
           />
-          <Select value={mode} onChange={(e) => setMode(e.target.value)} className="w-auto min-w-[140px]">
+          <Select value={mode} onChange={(e) => setMode(e.target.value)} className="w-full sm:w-auto sm:min-w-[140px]">
             <option value="Tous">Tous les modes</option>
             <option value="Livraison">Livraison</option>
             <option value="Retrait">Retrait</option>
           </Select>
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-auto" />
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full sm:w-auto" />
         </div>
 
         {loading ? (

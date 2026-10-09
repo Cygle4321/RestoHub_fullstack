@@ -69,7 +69,7 @@ export default function StoreMenu() {
       <h1 className="text-xl font-bold tracking-tight text-zinc-900">Menu</h1>
       <p className="mt-0.5 text-sm text-zinc-500">{products.length} plats disponibles</p>
 
-      <div className="sticky top-[60px] z-10 -mx-4 mt-4 space-y-3 border-b border-zinc-100 bg-[#fafafa]/95 px-4 py-3 backdrop-blur-md">
+      <div className="sticky top-16 z-10 -mx-4 mt-4 space-y-3 border-b border-zinc-100 bg-[#fafafa]/95 px-4 py-3 backdrop-blur-md">
         <SearchInput value={query} onChange={setQuery} placeholder="Rechercher un plat…" />
         <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-none">
           {catNames.map((c) => (
@@ -112,19 +112,19 @@ export default function StoreMenu() {
                   )}
                 </div>
               </Link>
-              <div className="flex flex-1 flex-col p-3.5">
+              <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
                 <Link to={`/store/${slug}/product/${p.id}`}>
-                  <h3 className="line-clamp-1 text-[13px] font-semibold text-zinc-900 transition group-hover:text-primary-700">
+                  <h3 className="line-clamp-1 text-xs font-semibold text-zinc-900 transition group-hover:text-primary-700 sm:text-[13px]">
                     {p.name}
                   </h3>
                 </Link>
                 <p className="mt-1 line-clamp-2 flex-1 text-xs leading-relaxed text-zinc-500">
                   {p.description}
                 </p>
-                <div className="mt-2.5 flex items-center justify-between gap-2">
-                  <span className="text-sm font-bold text-zinc-900">{fmt(p.price)}</span>
+                <div className="mt-2.5 flex items-center justify-between gap-1.5">
+                  <span className="min-w-0 truncate text-xs font-bold text-zinc-900 sm:text-sm">{fmt(p.price)}</span>
                   {!p.available && (
-                    <Badge variant="danger">Épuisé</Badge>
+                    <Badge variant="danger" className="shrink-0">Épuisé</Badge>
                   )}
                 </div>
                 <button
