@@ -379,7 +379,7 @@ export default function Settings() {
 
           {tab === "Paiements" && (
             <Card>
-              <CardHeader title="Moyens de paiement" subtitle="Activez les méthodes acceptées en boutique" />
+              <CardHeader title="Moyens de paiement" subtitle="Activez les méthodes acceptées pour votre restaurant" />
               <div className="space-y-6 p-5">
                 <div>
                   <p className="mb-3 text-sm font-medium text-gray-700">Mobile Money</p>

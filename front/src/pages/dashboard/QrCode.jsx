@@ -21,9 +21,9 @@ export default function QrCode() {
       try {
         const res = await restaurantApi.settings();
         const s = res.data || res;
-        if (!cancelled) setResto({ name: s.name || "Ma boutique", slug: s.slug || "" });
+        if (!cancelled) setResto({ name: s.name || "Mon restaurant", slug: s.slug || "" });
       } catch {
-        if (!cancelled) setResto({ name: "Ma boutique", slug: "" });
+        if (!cancelled) setResto({ name: "Mon restaurant", slug: "" });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -45,7 +45,7 @@ export default function QrCode() {
     if (!dataUrl) return toast("QR Code pas encore prêt", "error");
     const a = document.createElement("a");
     a.href = dataUrl;
-    a.download = `qr-code-${resto?.slug || "boutique"}.png`;
+    a.download = `qr-code-${resto?.slug || "restaurant"}.png`;
     a.click();
     toast(label);
   };
@@ -53,7 +53,7 @@ export default function QrCode() {
   const downloadPdf = () => {
     if (!dataUrl || !url) return toast("QR Code pas encore prêt", "error");
     const err = downloadQrPdf({
-      restaurantName: resto?.name || "Ma boutique",
+      restaurantName: resto?.name || "Mon restaurant",
       url,
       qrDataUrl: dataUrl,
     });

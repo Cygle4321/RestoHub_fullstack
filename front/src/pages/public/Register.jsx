@@ -94,8 +94,8 @@ export default function Register() {
             </span>
             <span className="text-xl font-bold tracking-tight text-gray-900">RestoHub</span>
           </Link>
-          <h1 className="mt-6 text-2xl font-bold tracking-tight text-gray-900">Créez votre boutique</h1>
-          <p className="mt-1 text-sm text-gray-500">Gratuit, sans engagement. En ligne en 5 minutes.</p>
+          <h1 className="mt-6 text-2xl font-bold tracking-tight text-gray-900">Inscrivez votre restaurant</h1>
+          <p className="mt-1 text-sm text-gray-500">Votre menu en ligne en 5 minutes. Gratuit, sans engagement.</p>
         </div>
 
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">

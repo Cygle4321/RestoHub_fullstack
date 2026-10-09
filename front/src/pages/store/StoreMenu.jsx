@@ -49,7 +49,7 @@ export default function StoreMenu() {
   if (error) {
     return (
       <div className="mx-auto max-w-2xl px-4 pt-10">
-        <EmptyState icon={SearchX} title="Boutique introuvable" description={error} />
+        <EmptyState icon={SearchX} title="Restaurant introuvable" description={error} />
       </div>
     );
   }

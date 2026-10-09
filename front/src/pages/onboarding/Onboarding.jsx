@@ -164,7 +164,7 @@ export default function Onboarding() {
         // Rafraîchir la session utilisateur
         await refresh();
 
-        toast("Votre boutique est en ligne !");
+        toast("Votre restaurant est en ligne !");
         setStep(5);
       } catch (err) {
         console.error(err);
@@ -252,7 +252,7 @@ export default function Onboarding() {
           <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
             <h1 className="text-xl font-bold">Parlez-nous de votre restaurant</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Ces infos apparaîtront sur votre boutique en ligne.
+              Ces infos apparaîtront sur votre menu et carte en ligne.
             </p>
             <div className="mt-6 grid gap-5 sm:grid-cols-2">
               <Input
@@ -353,7 +353,7 @@ export default function Onboarding() {
         {/* Step 3 — Personnalisation */}
         {step === 3 && (
           <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-            <h1 className="text-xl font-bold">Personnalisez votre boutique</h1>
+            <h1 className="text-xl font-bold">Personnalisez votre restaurant</h1>
             <p className="mt-1 text-sm text-gray-500">
               Choisissez la couleur principale de votre marque.
             </p>
@@ -439,8 +439,8 @@ export default function Onboarding() {
             </span>
             <h1 className="mt-6 text-3xl font-extrabold tracking-tight">C'est publié ! 🎉</h1>
             <p className="mt-3 max-w-md text-sm text-gray-600">
-              Félicitations{info.name ? `, ${info.name}` : ""} ! Votre boutique est maintenant en
-              ligne et prête à recevoir ses premières commandes.
+              Félicitations{info.name ? `, ${info.name}` : ""} ! Votre restaurant est maintenant en
+              ligne et prêt à recevoir ses premières commandes.
             </p>
             {slug && (
               <p className="mt-2 text-sm text-primary-600">
@@ -456,7 +456,7 @@ export default function Onboarding() {
                 className="px-6 py-3"
                 onClick={() => navigate(slug ? `/store/${slug}` : "/store")}
               >
-                <ShoppingCart size={17} /> Voir ma boutique
+                <ShoppingCart size={17} /> Voir mon menu en ligne
               </Button>
             </div>
           </section>
@@ -474,7 +474,7 @@ export default function Onboarding() {
                 <>Enregistrement…</>
               ) : (
                 <>
-                  {step === 4 ? "Publier ma boutique" : "Continuer"} <ArrowRight size={16} />
+                  {step === 4 ? "Publier mon restaurant" : "Continuer"} <ArrowRight size={16} />
                 </>
               )}
             </Button>

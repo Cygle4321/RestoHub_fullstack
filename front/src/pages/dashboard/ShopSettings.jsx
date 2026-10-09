@@ -80,7 +80,7 @@ export default function ShopSettings() {
   const saveSettings = async () => {
     try {
       await restaurantApi.updateSettings(form);
-      toast("Paramètres de la boutique enregistrés");
+      toast("Paramètres du restaurant enregistrés");
     } catch {
       toast("Erreur lors de l'enregistrement", "error");
     }
@@ -93,21 +93,21 @@ export default function ShopSettings() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Ma boutique</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Mon restaurant</h1>
         <Link
           to={storeSlug ? `/store/${storeSlug}` : "/store"}
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700"
         >
-          Voir la boutique <ExternalLink size={15} />
+          Voir le menu en ligne <ExternalLink size={15} />
         </Link>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-3">
         <div className="space-y-6 xl:col-span-2">
           <Card>
-            <CardHeader title="Identité de la boutique" />
+            <CardHeader title="Identité du restaurant" />
             <div className="space-y-5 p-5">
               <input
                 ref={logoInput}
@@ -144,7 +144,7 @@ export default function ShopSettings() {
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Logo de la boutique</p>
+                  <p className="text-sm font-semibold text-gray-900">Logo du restaurant</p>
                   <p className="text-xs text-gray-500">Carré, PNG transparent recommandé</p>
                 </div>
               </div>
@@ -167,7 +167,7 @@ export default function ShopSettings() {
                   </button>
                 )}
               </div>
-              <Input label="Nom de la boutique" value={form.name} onChange={(e) => set("name", e.target.value)} />
+              <Input label="Nom du restaurant" value={form.name} onChange={(e) => set("name", e.target.value)} />
               <Textarea label="Description" rows={3} value={form.description} onChange={(e) => set("description", e.target.value)} />
               <div>
                 <p className="mb-2 text-sm font-medium text-gray-700">Couleur du thème</p>
@@ -216,7 +216,7 @@ export default function ShopSettings() {
 
         <div className="xl:col-span-1">
           <Card className="sticky top-6">
-            <CardHeader title="Aperçu" subtitle="Rendu en temps réel de votre boutique" />
+            <CardHeader title="Aperçu" subtitle="Rendu en temps réel de votre restaurant" />
             <div className="p-5">
               <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
                 <div className="h-16" style={form.cover ? { backgroundImage: `url(${form.cover})`, backgroundSize: "cover", backgroundPosition: "center" } : { backgroundColor: form.color }} />
@@ -224,7 +224,7 @@ export default function ShopSettings() {
                   <div className="-mt-8 mb-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border-4 border-white shadow" style={form.logo ? undefined : { backgroundColor: form.color }}>
                     {form.logo ? <img src={form.logo} alt="Logo" className="h-full w-full object-cover" /> : <UtensilsCrossed size={20} className="text-white" />}
                   </div>
-                  <p className="font-bold text-gray-900">{form.name || "Nom de la boutique"}</p>
+                  <p className="font-bold text-gray-900">{form.name || "Nom du restaurant"}</p>
                   <p className="mt-1 line-clamp-3 text-xs text-gray-500">{form.description || "Description de votre restaurant…"}</p>
                   <p className="mt-3 inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold text-white" style={{ backgroundColor: form.color }}>
                     Ouvert · {form.hours.lun}

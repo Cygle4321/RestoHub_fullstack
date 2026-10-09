@@ -15,7 +15,7 @@ export function generateRestaurantSchema(restaurant, storeUrl = "") {
     "name": restaurant.name,
     "description":
       restaurant.description ||
-      `Boutique en ligne et menu digital de ${restaurant.name}. Commandez vos plats préférés en livraison ou à emporter.`,
+      `Menu digital et commande en ligne chez ${restaurant.name}. Commandez vos plats préférés en livraison ou à emporter.`,
     "image": restaurant.banner || restaurant.logo || "https://restohub.app/og-image.svg",
     "telephone": restaurant.phone || "+225 00 00 00 00",
     "servesCuisine": restaurant.cuisine || "Africaine, Internationale",

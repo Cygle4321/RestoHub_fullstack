@@ -44,7 +44,7 @@ const nav = [
   { to: "/dashboard/delivery", icon: Truck, label: "Livraison" },
   { to: "/dashboard/promotions", icon: Tag, label: "Promotions" },
   { to: "/dashboard/analytics", icon: BarChart3, label: "Statistiques" },
-  { to: "/dashboard/shop", icon: Store, label: "Ma boutique" },
+  { to: "/dashboard/shop", icon: Store, label: "Mon restaurant" },
   { to: "/dashboard/qrcode", icon: QrCode, label: "QR Code" },
   { to: "/dashboard/billing", icon: CreditCard, label: "Abonnement" },
   { to: "/dashboard/settings", icon: Settings, label: "Paramètres" },
@@ -427,7 +427,7 @@ export default function DashboardLayout() {
               }`}
             >
               <span className={`h-1.5 w-1.5 rounded-full ${restaurant?.is_open ? "animate-pulse bg-success-500" : "bg-danger-500"}`} />
-              {restaurant?.is_open ? "Boutique ouverte" : "Boutique fermée"}
+              {restaurant?.is_open ? "Restaurant ouvert" : "Restaurant fermé"}
             </span>
             <div className="relative" ref={notifRef}>
               <button

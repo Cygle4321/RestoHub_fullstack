@@ -38,7 +38,7 @@ export default function Terms() {
               Les présentes Conditions Générales d'Utilisation (ci-après « CGU ») ont pour objet de définir les modalités et conditions d'accès et d'utilisation de la plateforme <strong>RestoHub</strong> (ci-après « la Plateforme »), accessible à l'adresse <em>restohub.com</em>, éditée et opérée par la société RestoHub SAS.
             </p>
             <p>
-              La Plateforme est un logiciel en tant que service (SaaS) qui permet aux professionnels de la restauration de créer et gérer une boutique en ligne, recevoir des commandes, gérer les paiements, suivre les livraisons et piloter leur activité.
+              La Plateforme est un logiciel en tant que service (SaaS) qui permet aux professionnels de la restauration de créer et gérer leur menu digital et leur espace de commande en ligne, recevoir des commandes, gérer les paiements, suivre les livraisons et piloter leur activité.
             </p>
 
             <h2>2. Acceptation des CGU</h2>
@@ -50,7 +50,7 @@ export default function Terms() {
             <ul>
               <li><strong>Utilisateur :</strong> toute personne physique ou morale qui crée un compte sur la Plateforme, qu'il soit propriétaire de restaurant, membre d'équipe ou administrateur.</li>
               <li><strong>Restaurant :</strong> l'établissement de restauration inscrit sur la Plateforme via un compte Utilisateur.</li>
-              <li><strong>Client final :</strong> toute personne qui passe commande via la boutique en ligne d'un Restaurant.</li>
+              <li><strong>Client final :</strong> toute personne qui passe commande via le menu ou site en ligne d'un Restaurant.</li>
               <li><strong>Abonnement :</strong> formule payante souscrite par le Restaurant, donnant accès aux fonctionnalités de la Plateforme.</li>
             </ul>
 
@@ -67,7 +67,7 @@ export default function Terms() {
             <h2>5. Services proposés</h2>
             <p>La Plateforme propose les services suivants :</p>
             <ul>
-              <li>Création et personnalisation d'une boutique en ligne (nom, couleurs, logo, horaires)</li>
+              <li>Création et personnalisation d'un menu digital et site restaurant (nom, couleurs, logo, horaires)</li>
               <li>Gestion du catalogue de produits (catégories, prix, photos, disponibilité)</li>
               <li>Réception et gestion des commandes en temps réel</li>
               <li>Intégration de paiements en ligne (Mobile Money via FedaPay, paiement à la livraison)</li>

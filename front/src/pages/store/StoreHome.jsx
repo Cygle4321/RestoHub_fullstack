@@ -70,7 +70,7 @@ export default function StoreHome() {
   if (error || !restaurant) {
     return (
       <div className="mx-auto max-w-2xl px-4 pt-10">
-        <EmptyState icon={UtensilsCrossed} title="Boutique introuvable" description={error || "Aucune donnée disponible."} />
+        <EmptyState icon={UtensilsCrossed} title="Restaurant introuvable" description={error || "Aucune donnée disponible."} />
       </div>
     );
   }
@@ -85,7 +85,7 @@ export default function StoreHome() {
         exactTitle
         description={
           restaurant.description ||
-          `Boutique en ligne et menu digital de ${restaurant.name} (${restaurant.city || "Abidjan"}). Commandez vos plats préférés avec livraison rapide et paiement sécurisé.`
+          `Menu digital et commande en ligne chez ${restaurant.name} (${restaurant.city || "Abidjan"}). Commandez vos plats préférés avec livraison rapide et paiement sécurisé.`
         }
         image={restaurant.cover || restaurant.logo}
         url={storeUrl}

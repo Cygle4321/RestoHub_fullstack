@@ -60,7 +60,7 @@ export function StoreProvider({ children }) {
       })
       .catch((e) => {
         if (cancelled) return;
-        if (!cached) setError(e?.message || "Boutique introuvable");
+        if (!cached) setError(e?.message || "Restaurant introuvable");
         setLoading(false);
       });
     return () => {

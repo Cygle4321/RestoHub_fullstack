@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 
-const DEFAULT_TITLE = "RestoHub — Solution SaaS Tout-en-Un pour Restaurants & Boutiques en Ligne";
+const DEFAULT_TITLE = "RestoHub — Solution SaaS pour Restaurants : Menus Digitaux & Commandes en Ligne";
 const DEFAULT_DESCRIPTION =
-  "RestoHub est la plateforme SaaS tout-en-un pour les restaurants : créez votre boutique en ligne personnalisée, menus QR Code interactifs, encaissement Mobile Money & CB, gestion des commandes en direct et livraisons sans compétence technique.";
+  "RestoHub est la plateforme SaaS tout-en-un pour les restaurants : créez votre menu digital interactif, votre site de commande en ligne, menus QR Code, encaissement Mobile Money & CB, gestion des commandes et livraisons.";
 const DEFAULT_IMAGE = "/og-image.svg";
 const DEFAULT_ROBOTS = "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1";
 

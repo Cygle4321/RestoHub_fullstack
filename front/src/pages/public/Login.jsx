@@ -89,7 +89,7 @@ export default function Login() {
           <p className="mt-1 text-sm text-zinc-500">
             {twoFactorEmail
               ? `Entrez le code à 6 chiffres envoyé à ${twoFactorEmail}`
-              : "Connectez-vous pour gérer votre boutique."}
+              : "Connectez-vous pour gérer votre restaurant."}
           </p>
         </div>
 

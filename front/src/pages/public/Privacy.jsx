@@ -38,7 +38,7 @@ export default function Privacy() {
               La société RestoHub SAS (ci-après « RestoHub », « nous ») s'engage à protéger la vie privée de ses utilisateurs. La présente Politique de Confidentialité décrit comment nous collectons, utilisons, stockons et protégeons vos données personnelles lorsque vous utilisez notre plateforme.
             </p>
             <p>
-              Cette politique s'applique à tous les utilisateurs de la plateforme RestoHub : propriétaires de restaurants, membres d'équipe, administrateurs et clients finaux qui passent commande via les boutiques hébergées.
+              Cette politique s'applique à tous les utilisateurs de la plateforme RestoHub : propriétaires de restaurants, membres d'équipe, administrateurs et clients finaux qui passent commande via les restaurants hébergés.
             </p>
 
             <h2>2. Données collectées</h2>
@@ -62,7 +62,7 @@ export default function Privacy() {
             <p>Vos données personnelles sont traitées pour les finalités suivantes :</p>
             <ul>
               <li>Création et gestion de votre compte utilisateur</li>
-              <li>Fourniture des services de la plateforme (boutique en ligne, commandes, paiements)</li>
+              <li>Fourniture des services de la plateforme (menu digital, commandes en ligne, livraisons, paiements)</li>
               <li>Communication relative à votre compte (vérification d'email, notifications de commandes, alertes)</li>
               <li>Facturation et gestion des abonnements</li>
               <li>Amélioration de la plateforme et statistiques d'usage (données anonymisées)</li>
@@ -130,7 +130,7 @@ export default function Privacy() {
 
             <h2>10. Données des clients finaux</h2>
             <p>
-              Lorsqu'un client final passe commande via la boutique d'un Restaurant, RestoHub agit en tant que sous-traitant pour le compte du Restaurant (responsable de traitement). Le Restaurant est tenu d'informer ses clients de l'utilisation de la plateforme RestoHub et de respecter la réglementation en matière de protection des données.
+              Lorsqu'un client final passe commande via le menu ou site d'un Restaurant, RestoHub agit en tant que sous-traitant pour le compte du Restaurant (responsable de traitement). Le Restaurant est tenu d'informer ses clients de l'utilisation de la plateforme RestoHub et de respecter la réglementation en matière de protection des données.
             </p>
 
             <h2>11. Transferts internationaux</h2>

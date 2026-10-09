@@ -188,7 +188,7 @@ export default function AdminRestaurantDetails() {
           </>
         }
       >
-        <p className="text-sm text-gray-600">Voulez-vous vraiment suspendre <strong>{r.name}</strong> ? Sa boutique sera immédiatement hors ligne.</p>
+        <p className="text-sm text-gray-600">Voulez-vous vraiment suspendre <strong>{r.name}</strong> ? Son restaurant et son menu seront immédiatement hors ligne.</p>
       </Modal>
     </div>
   );

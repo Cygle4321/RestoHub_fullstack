@@ -142,7 +142,7 @@ export default function Billing() {
       {restricted && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
           <p className="font-semibold">Votre période d'essai est terminée.</p>
-          <p className="mt-1">Choisissez et payez un plan ci-dessous pour reprendre la gestion de votre boutique.</p>
+          <p className="mt-1">Choisissez et payez un plan ci-dessous pour reprendre la gestion de votre restaurant.</p>
         </div>
       )}
 

@@ -85,9 +85,9 @@ export const salesSeries = [
 ];
 
 export const plans = [
-  { name: "Starter", price: 10000, period: "/mois", features: ["Boutique en ligne", "Menu digital & QR Code", "Jusqu'à 30 produits", "Commandes illimitées", "Support email"], current: false },
+  { name: "Starter", price: 10000, period: "/mois", features: ["Menu & Restaurant en ligne", "Menu digital & QR Code", "Jusqu'à 30 produits", "Commandes illimitées", "Support email"], current: false },
   { name: "Business", price: 25000, period: "/mois", features: ["Tout Starter", "Produits illimités", "Livraison & zones", "Promotions & codes promo", "Statistiques avancées", "Support prioritaire"], current: true },
-  { name: "Premium", price: 50000, period: "/mois", features: ["Tout Business", "Multi-boutiques", "API & intégrations", "Gestion des livreurs", "Account manager dédié"], current: false },
+  { name: "Premium", price: 50000, period: "/mois", features: ["Tout Business", "Multi-restaurants", "API & intégrations", "Gestion des livreurs", "Account manager dédié"], current: false },
 ];
 
 // ---------- Storefront (public shop) ----------

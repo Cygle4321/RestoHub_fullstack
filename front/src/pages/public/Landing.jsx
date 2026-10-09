@@ -9,7 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import SEO from "../../components/common/SEO";
 
 const features = [
-  { icon: Store, title: "Boutique en ligne", text: "Votre restaurant en ligne, personnalisable à vos couleurs, sans aucune ligne de code." },
+  { icon: Store, title: "Menu & Restaurant en ligne", text: "Votre menu interactif et vos commandes, personnalisables à vos couleurs, sans aucune ligne de code." },
   { icon: ShoppingCart, title: "Commandes en temps réel", text: "Recevez et gérez vos commandes en direct, du paiement jusqu'à la livraison." },
   { icon: CreditCard, title: "Paiements intégrés", text: "Mobile Money, carte bancaire ou paiement à la livraison, tout est automatisé." },
   { icon: Bike, title: "Livraisons & zones", text: "Définissez vos zones de livraison, vos frais et suivez vos livreurs en direct." },
@@ -18,7 +18,7 @@ const features = [
 ];
 
 const steps = [
-  { n: 1, title: "Créez votre boutique", text: "Inscrivez-vous en 2 minutes et renseignez les informations de votre restaurant." },
+  { n: 1, title: "Créez votre restaurant", text: "Inscrivez-vous en 2 minutes et renseignez les informations de votre restaurant." },
   { n: 2, title: "Ajoutez votre menu", text: "Ajoutez vos plats, prix, photos et options en quelques clics." },
   { n: 3, title: "Recevez des commandes", text: "Partagez votre lien et votre QR code, et recevez vos premières commandes." },
 ];
@@ -36,10 +36,10 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       <SEO
-        title="RestoHub — Solution SaaS Tout-en-Un pour Restaurants & Boutiques en Ligne"
+        title="RestoHub — Solution SaaS pour Restaurants : Menus Digitaux & Commandes en Ligne"
         exactTitle
-        description="Créez votre boutique de restaurant en ligne en 5 minutes : menu digital QR code, commandes en temps réel, paiements Mobile Money et livraisons automatisées."
-        keywords="restohub, saas restaurant, boutique en ligne restaurant, menu qr code, commande restaurant afrique, livraison repas, fedapay"
+        description="Digitalisez votre restaurant en 5 minutes : menu digital interactif, QR code de table, commandes en direct, paiements Mobile Money et livraisons automatisées."
+        keywords="restohub, saas restaurant, menu digital restaurant, menu qr code, commande restaurant afrique, livraison repas, fedapay"
         url="https://restohub.app/"
         type="website"
       />
@@ -68,7 +68,7 @@ export default function Landing() {
                   <Button variant="ghost">Se connecter</Button>
                 </Link>
                 <Link to="/register">
-                  <Button className="px-3 text-sm sm:px-4">Créer ma boutique</Button>
+                  <Button className="px-3 text-sm sm:px-4">Créer mon restaurant</Button>
                 </Link>
               </>
             )}
@@ -85,13 +85,13 @@ export default function Landing() {
               Votre restaurant, <span className="text-primary-500">en ligne en 5 minutes</span>
             </h1>
             <p className="mt-5 max-w-xl text-lg text-zinc-600">
-              RestoHub vous donne une boutique en ligne clé en main : menu digital, commandes en temps réel,
+              RestoHub vous donne un menu digital et un système de commande en ligne clé en main : commandes en temps réel,
               paiements Mobile Money, livraisons suivies et statistiques. Sans commission sur vos ventes.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link to="/register">
                 <Button className="px-6 py-3 text-base">
-                  Créer ma boutique gratuitement <ArrowRight size={18} />
+                  Créer mon restaurant gratuitement <ArrowRight size={18} />
                 </Button>
               </Link>
               <a href="#tarifs">
@@ -161,7 +161,7 @@ export default function Landing() {
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight">Comment ça marche</h2>
-          <p className="mt-3 text-zinc-600">Lancez votre boutique en ligne en trois étapes simples.</p>
+          <p className="mt-3 text-zinc-600">Digitalisez votre restaurant et votre carte en trois étapes simples.</p>
         </div>
         <div className="mt-12 grid gap-8 md:grid-cols-3">
           {steps.map((s) => (
@@ -273,12 +273,12 @@ export default function Landing() {
       {/* CTA final */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
         <div className="rounded-2xl bg-zinc-900 px-6 py-14 text-center sm:px-12">
-          <h2 className="text-3xl font-bold tracking-tight text-white">Prêt à lancer votre boutique en ligne ?</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-white">Prêt à digitaliser votre restaurant ?</h2>
           <p className="mx-auto mt-3 max-w-xl text-zinc-300">
             Rejoignez plus de 500 restaurants qui développent leur activité avec RestoHub. Essai gratuit, sans engagement.
           </p>
           <Link to="/register" className="mt-8 inline-block">
-            <Button className="px-8 py-3.5 text-base">Créer ma boutique gratuitement <ArrowRight size={18} /></Button>
+            <Button className="px-8 py-3.5 text-base">Créer mon restaurant gratuitement <ArrowRight size={18} /></Button>
           </Link>
         </div>
       </section>

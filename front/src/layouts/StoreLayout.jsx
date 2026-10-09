@@ -33,7 +33,7 @@ function StoreLayoutInner() {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fafafa] p-6">
-        <EmptyState icon={Store} title="Boutique introuvable" description={error} />
+        <EmptyState icon={Store} title="Restaurant introuvable" description={error} />
       </div>
     );
   }
@@ -159,8 +159,7 @@ function StoreLayoutInner() {
           )}
           <p className="mt-4 text-xs text-zinc-400">
             Propulsé par{" "}
-            <span className="font-semibold text-primary-600">RestoHub</span> — Créez votre boutique
-            en ligne
+            <span className="font-semibold text-primary-600">RestoHub</span> — Digitalisez votre restaurant en ligne
           </p>
         </div>
       </footer>
