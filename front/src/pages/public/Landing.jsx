@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import {
   UtensilsCrossed, ShoppingCart, CreditCard, Bike, QrCode, BarChart3,
   Check, Star, ArrowRight, Store, Menu, LayoutDashboard,
+  Users, Award, Receipt, Sparkles,
 } from "lucide-react";
 import { Button, Badge } from "../../components/ui";
 import { plans, fmt } from "../../data/mock";
@@ -11,10 +12,13 @@ import SEO from "../../components/common/SEO";
 const features = [
   { icon: Store, title: "Menu & Restaurant en ligne", text: "Votre menu interactif et vos commandes, personnalisables à vos couleurs, sans aucune ligne de code." },
   { icon: ShoppingCart, title: "Commandes en temps réel", text: "Recevez et gérez vos commandes en direct, du paiement jusqu'à la livraison." },
-  { icon: CreditCard, title: "Paiements intégrés", text: "Mobile Money, carte bancaire ou paiement à la livraison, tout est automatisé." },
-  { icon: Bike, title: "Livraisons & zones", text: "Définissez vos zones de livraison, vos frais et suivez vos livreurs en direct." },
-  { icon: QrCode, title: "Menu digital & QR Code", text: "Votre menu accessible par un simple flash de QR code, à table ou à emporter." },
-  { icon: BarChart3, title: "Statistiques avancées", text: "Ventes, produits stars, clients fidèles : pilotez votre activité avec des données claires." },
+  { icon: Users, badge: "Nouveau", title: "Commandes groupées en direct", text: "Permettez à vos clients de commander à plusieurs : salon partagé en 1 clic sur WhatsApp et ajouts collaboratifs en temps réel." },
+  { icon: Award, badge: "Nouveau", title: "Programme de fidélité & CRM", text: "Points automatiques, cartes de fidélité numériques et relances WhatsApp en 1 clic pour réengager vos clients inactifs." },
+  { icon: Receipt, badge: "Nouveau", title: "Tickets & Reçus digitaux", text: "Génération automatique de reçus illustrés avec QR code de suivi et partage instantané sur WhatsApp." },
+  { icon: CreditCard, title: "Paiements Mobile Money", text: "Acceptez Wave, MTN, Orange Money, Moov ou carte bancaire avec FedaPay en toute sécurité." },
+  { icon: Bike, title: "Livraisons & zones flexibles", text: "Définissez vos zones de livraison, vos frais et suivez vos livreurs en direct." },
+  { icon: QrCode, title: "Menu digital & QR Code de table", text: "Votre menu accessible par un simple flash de QR code, à table ou à emporter." },
+  { icon: BarChart3, title: "Statistiques & Plats stars", text: "Ventes, plats favoris, segmentation des clients et alertes pour piloter votre activité avec clarté." },
 ];
 
 const steps = [
@@ -80,13 +84,13 @@ export default function Landing() {
       <section className="relative overflow-hidden bg-zinc-50/60">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:py-28">
           <div>
-            <Badge variant="primary" dot>Nouvelle plateforme 2026</Badge>
+            <Badge variant="primary" dot>Nouveau 2026 — Commandes groupées & Fidélité CRM inclus</Badge>
             <h1 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
               Votre restaurant, <span className="text-primary-500">en ligne en 5 minutes</span>
             </h1>
             <p className="mt-5 max-w-xl text-base sm:text-lg text-zinc-600">
-              RestoHub vous donne un menu digital et un système de commande en ligne clé en main : commandes en temps réel,
-              paiements Mobile Money, livraisons suivies et statistiques. Sans commission sur vos ventes.
+              RestoHub vous donne un menu digital, des commandes en temps réel, des commandes groupées collaboratives,
+              des cartes de fidélité et des paiements Mobile Money intégrés. Sans commission sur vos ventes.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
               <Link to="/register" className="w-full sm:w-auto">
@@ -133,21 +137,21 @@ export default function Landing() {
                 </div>
                 <div className="mt-5 space-y-2">
                   {[
-                    { id: "CMD-1042", name: "Poulet Braisé x2", st: "Nouvelle" },
-                    { id: "CMD-1041", name: "Poisson grillé x1", st: "En préparation" },
-                    { id: "CMD-1040", name: "Kedjenou x1", st: "En livraison" },
+                    { id: "CMD-1043", name: "Salon Groupé (Bureau) • 4 convives", st: "En cours", isNew: true },
+                    { id: "CMD-1042", name: "Poulet Braisé x2 + 150 pts fidélité", st: "Nouvelle", isNew: false },
+                    { id: "CMD-1041", name: "Poisson grillé x1 • Reçu WhatsApp", st: "En préparation", isNew: false },
                   ].map((o) => (
-                    <div key={o.id} className="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50/70 px-3 py-2.5">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-50 text-primary-600">
-                          <ShoppingCart size={15} />
+                    <div key={o.id} className="flex items-center justify-between gap-2 rounded-lg border border-zinc-100 bg-zinc-50/70 px-3 py-2.5">
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${o.isNew ? "bg-amber-100 text-amber-700" : "bg-primary-50 text-primary-600"}`}>
+                          {o.isNew ? <Users size={15} /> : <ShoppingCart size={15} />}
                         </span>
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <p className="text-xs font-semibold text-zinc-800">{o.id}</p>
-                          <p className="text-xs text-zinc-500">{o.name}</p>
+                          <p className="text-xs text-zinc-500 truncate">{o.name}</p>
                         </div>
                       </div>
-                      <span className="rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-medium text-primary-700">{o.st}</span>
+                      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${o.isNew ? "bg-amber-50 text-amber-700 border border-amber-200/50" : "bg-primary-50 text-primary-700"}`}>{o.st}</span>
                     </div>
                   ))}
                 </div>
@@ -185,11 +189,22 @@ export default function Landing() {
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
-              <div key={f.title} className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:shadow-md">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
-                  <f.icon size={22} />
-                </span>
-                <h3 className="mt-4 text-base font-semibold">{f.title}</h3>
+              <div
+                key={f.title}
+                className="group relative rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600 transition group-hover:bg-primary-500 group-hover:text-white">
+                    <f.icon size={22} />
+                  </span>
+                  {f.badge && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-2.5 py-0.5 text-xs font-semibold text-primary-700 border border-primary-200/50">
+                      <Sparkles size={11} className="text-primary-500" />
+                      {f.badge}
+                    </span>
+                  )}
+                </div>
+                <h3 className="mt-4 text-base font-semibold text-zinc-900">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-zinc-600">{f.text}</p>
               </div>
             ))}

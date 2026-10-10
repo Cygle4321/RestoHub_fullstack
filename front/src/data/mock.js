@@ -85,9 +85,9 @@ export const salesSeries = [
 ];
 
 export const plans = [
-  { name: "Starter", price: 10000, period: "/mois", features: ["Menu & Restaurant en ligne", "Menu digital & QR Code", "Jusqu'à 30 produits", "Commandes illimitées", "Support email"], current: false },
-  { name: "Business", price: 25000, period: "/mois", features: ["Tout Starter", "Produits illimités", "Livraison & zones", "Promotions & codes promo", "Statistiques avancées", "Support prioritaire"], current: true },
-  { name: "Premium", price: 50000, period: "/mois", features: ["Tout Business", "Multi-restaurants", "API & intégrations", "Gestion des livreurs", "Account manager dédié"], current: false },
+  { name: "Starter", price: 10000, period: "/mois", features: ["Menu digital & QR Code interactif", "Commandes en direct & Reçus digitaux", "Jusqu'à 30 produits", "Paiements Mobile Money intégrés", "Support email 7j/7"], current: false },
+  { name: "Business", price: 25000, period: "/mois", features: ["Tout Starter inclus", "Produits & catégories illimités", "Commandes groupées (salons partagés)", "Programme de fidélité & CRM clients", "Livraison & zones multi-tarifs", "Statistiques de ventes & plats stars", "Support prioritaire"], current: true },
+  { name: "Premium", price: 50000, period: "/mois", features: ["Tout Business inclus", "Relances WhatsApp ciblées 1-clic", "Multi-restaurants & points de vente", "Gestion de flotte de livreurs en direct", "API & intégrations personnalisées", "Account manager dédié 24/7"], current: false },
 ];
 
 // ---------- Storefront (public shop) ----------
