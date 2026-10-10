@@ -7,6 +7,7 @@ import { storeApi } from "../../api/store";
 import { fmt } from "../../lib/mappers";
 import { waLink, generateOrderReceipt, getOrderTrackingUrl } from "../../lib/whatsapp";
 import SEO from "../../components/common/SEO";
+import ReceiptTicketModal from "../../components/common/ReceiptTicketModal";
 
 const STATUS_ORDER = ["Nouvelle", "Confirmée", "En préparation", "Prête", "En livraison", "Livrée"];
 
@@ -20,6 +21,7 @@ export default function OrderTracking() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [showTicketModal, setShowTicketModal] = useState(false);
 
   // Avis client
   const searchNumberRef = useRef("");
@@ -152,19 +154,11 @@ export default function OrderTracking() {
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
               type="button"
-              onClick={() => {
-                const text = generateOrderReceipt({
-                  order,
-                  restaurantName: restaurant?.name || "RestoHub",
-                  storeSlug: slug,
-                });
-                const clientPhone = order.customer?.phone || searchPhoneRef.current || phone;
-                window.open(waLink(clientPhone, text), "_blank", "noopener");
-              }}
+              onClick={() => setShowTicketModal(true)}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3.5 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95"
             >
               <Receipt size={15} />
-              <span>Mon reçu sur WhatsApp</span>
+              <span>Mon ticket / reçu (Image)</span>
             </button>
             <button
               type="button"
@@ -299,6 +293,16 @@ export default function OrderTracking() {
           )}
         </>
       )}
+
+      {/* Modal du ticket de commande avec image HD & partage */}
+      <ReceiptTicketModal
+        open={showTicketModal}
+        onClose={() => setShowTicketModal(false)}
+        order={order}
+        restaurant={restaurant}
+        storeSlug={slug}
+        customerPhone={order?.customer?.phone || searchPhoneRef.current || phone}
+      />
     </div>
   );
 }

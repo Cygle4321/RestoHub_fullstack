@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle2, XCircle, MapPin, Clock, CreditCard, Loader2, MessageCircle, Share2, Users } from "lucide-react";
+import { CheckCircle2, XCircle, MapPin, Clock, CreditCard, Loader2, MessageCircle, Share2, Users, Receipt } from "lucide-react";
 import { Card, Badge, Button, EmptyState } from "../../components/ui";
 import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
 import { fmt } from "../../lib/mappers";
 import { waLink, generateOrderReceipt, generateGroupShareMessage } from "../../lib/whatsapp";
 import SEO from "../../components/common/SEO";
+import ReceiptTicketModal from "../../components/common/ReceiptTicketModal";
 
 export default function OrderConfirmation() {
   const { state } = useLocation();
@@ -24,6 +25,7 @@ export default function OrderConfirmation() {
   const [paymentStatus, setPaymentStatus] = useState("");
   const [loading, setLoading] = useState(!state?.order && Boolean(tx));
   const [error, setError] = useState(false);
+  const [showTicketModal, setShowTicketModal] = useState(false);
 
   useEffect(() => {
     if (order || !tx) return;
@@ -171,6 +173,15 @@ export default function OrderConfirmation() {
       <div className="mt-6 space-y-2.5">
         <button
           type="button"
+          onClick={() => setShowTicketModal(true)}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-95"
+        >
+          <Receipt size={18} />
+          <span>Recevoir / Partager mon reçu (Ticket image)</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => {
             const text = generateOrderReceipt({
               order,
@@ -180,10 +191,9 @@ export default function OrderConfirmation() {
             const phone = order?.customer?.phone || order?.customer_phone || "";
             window.open(waLink(phone, text), "_blank", "noopener");
           }}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-95"
+          className="w-full text-center text-xs text-emerald-700 hover:text-emerald-800 underline py-0.5"
         >
-          <MessageCircle size={18} />
-          <span>Recevoir / Ouvrir mon reçu sur WhatsApp</span>
+          Ou envoyer le reçu en texte simple WhatsApp
         </button>
 
         {(order.group_code || order.is_group_order || state?.isGroupOrder) && (
@@ -219,6 +229,15 @@ export default function OrderConfirmation() {
           Retour à l'accueil
         </Button>
       </div>
+
+      {/* Modal du ticket de commande avec image HD & partage */}
+      <ReceiptTicketModal
+        open={showTicketModal}
+        onClose={() => setShowTicketModal(false)}
+        order={order}
+        restaurant={restaurant}
+        storeSlug={slug}
+      />
     </div>
   );
 }
