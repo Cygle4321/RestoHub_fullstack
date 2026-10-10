@@ -58,6 +58,11 @@ export const storeApi = {
     return mapOrder(await apiClient.get(`/store/${slug}/track?${q}`, { auth: false }));
   },
 
+  /** Vérifie la fidélité client par son numéro de téléphone */
+  checkLoyalty: async (slug, phone) => {
+    return apiClient.get(`/store/${slug}/loyalty?phone=${encodeURIComponent(phone)}`, { auth: false });
+  },
+
   /** Avis client après livraison (vérifié par numéro + téléphone) */
   addReview: async (slug, { number, phone, rating, comment }) => {
     return apiClient.post(

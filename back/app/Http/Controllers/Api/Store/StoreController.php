@@ -325,6 +325,8 @@ class StoreController extends Controller
                 'name' => $data['customer_name'],
             ]);
 
+            $customer->recalculateFavoriteDish();
+
             return $order->load('items');
         });
 
@@ -522,5 +524,54 @@ class StoreController extends Controller
             'message' => 'Merci pour votre avis !',
             'review' => $review,
         ], 201);
+    }
+
+    /**
+     * Renvoie le statut de fidélité d'un client par son numéro de téléphone.
+     */
+    public function customerLoyalty(string $slug, Request $request)
+    {
+        $phone = trim($request->query('phone', ''));
+        if (! $phone) {
+            return response()->json(['found' => false]);
+        }
+
+        $restaurant = Restaurant::where('slug', $slug)->firstOrFail();
+
+        $customer = Customer::where('restaurant_id', $restaurant->id)
+            ->where('phone', $phone)
+            ->first();
+
+        if (! $customer) {
+            return response()->json([
+                'found' => false,
+                'phone' => $phone,
+            ]);
+        }
+
+        $loyaltySettings = $restaurant->loyalty_settings ?? [
+            'enabled' => true,
+            'threshold' => 5,
+            'reward_title' => 'Une boisson offerte',
+        ];
+
+        $threshold = (int) ($loyaltySettings['threshold'] ?? 5);
+        $count = (int) $customer->orders_count;
+        $stamps = $count % $threshold;
+        $isNextReward = ($stamps === ($threshold - 1)); // La prochaine commande débloque la récompense
+
+        return response()->json([
+            'found' => true,
+            'name' => $customer->name,
+            'phone' => $customer->phone,
+            'orders_count' => $count,
+            'stamps' => $stamps,
+            'threshold' => $threshold,
+            'orders_until_next' => $threshold - $stamps,
+            'is_next_reward' => $isNextReward,
+            'favorite_dish' => $customer->favorite_dish,
+            'reward_title' => $loyaltySettings['reward_title'] ?? 'Une boisson offerte',
+            'loyalty_enabled' => (bool) ($loyaltySettings['enabled'] ?? true),
+        ]);
     }
 }

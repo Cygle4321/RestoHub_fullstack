@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bike, Store, Smartphone, CreditCard, Banknote, ShoppingBag, Loader2, CheckCircle2, Users, X, XCircle, Tag, BadgePercent } from "lucide-react";
+import { Bike, Store, Smartphone, CreditCard, Banknote, ShoppingBag, Loader2, CheckCircle2, Users, X, XCircle, Tag, BadgePercent, Gift } from "lucide-react";
 import { Card, CardHeader, Button, Input, Textarea, Select, EmptyState, useToast } from "../../components/ui";
 import { useCart } from "../../store/CartContext";
 import { useStore } from "../../store/StoreContext";
@@ -8,6 +8,7 @@ import { storeApi } from "../../api/store";
 import { fmt, parseItemParticipant } from "../../lib/mappers";
 import { computeDiscount } from "../../lib/discount";
 import SEO from "../../components/common/SEO";
+import DigitalLoyaltyCard from "../../components/common/DigitalLoyaltyCard";
 
 export default function Checkout() {
   const { slug, zones } = useStore();
@@ -72,6 +73,39 @@ export default function Checkout() {
   const [cardCvc, setCardCvc] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loyaltyInfo, setLoyaltyInfo] = useState(null);
+
+  useEffect(() => {
+    const cleanPhone = phone.trim();
+    if (cleanPhone.length < 8) {
+      setLoyaltyInfo(null);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      storeApi
+        .checkLoyalty(slug, cleanPhone)
+        .then((res) => {
+          if (cancelled) return;
+          if (res?.found) {
+            setLoyaltyInfo(res);
+            if (!name.trim() && res.name) {
+              setName(res.name);
+            }
+          } else {
+            setLoyaltyInfo(null);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setLoyaltyInfo(null);
+        });
+    }, 450);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [slug, phone]);
 
   useEffect(() => {
     if (!zone && zones.length > 0) setZone(zones[0].id);
@@ -214,6 +248,54 @@ export default function Checkout() {
                 />
                 {errors.phone && <p className="mt-1 text-xs font-medium text-danger-600">{errors.phone}</p>}
               </div>
+
+              {/* Bannière de Fidélité Digitale RestoHub */}
+              {loyaltyInfo && loyaltyInfo.loyalty_enabled && (
+                <div className="sm:col-span-2">
+                  <div
+                    className={`rounded-2xl border p-3.5 transition-all shadow-xs ${
+                      loyaltyInfo.is_next_reward
+                        ? "border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-950"
+                        : "border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-950"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-xs ${
+                            loyaltyInfo.is_next_reward
+                              ? "bg-amber-500 text-white"
+                              : "bg-emerald-600 text-white"
+                          }`}
+                        >
+                          <Gift size={18} />
+                        </span>
+                        <div>
+                          <p className="text-xs font-bold">
+                            {loyaltyInfo.is_next_reward
+                              ? `🎉 Félicitations ${loyaltyInfo.name || ""} ! C'est votre 5e commande !`
+                              : `🎟️ Carte de Fidélité : ${loyaltyInfo.stamps}/${loyaltyInfo.threshold} tampons`}
+                          </p>
+                          <p className="text-[11px] opacity-80 mt-0.5">
+                            {loyaltyInfo.is_next_reward
+                              ? `Votre cadeau automatique est débloqué : ${loyaltyInfo.reward_title} !`
+                              : `Plus que ${loyaltyInfo.orders_until_next} commande(s) avant votre : ${loyaltyInfo.reward_title}`}
+                          </p>
+                        </div>
+                      </div>
+
+                      <DigitalLoyaltyCard
+                        customerName={loyaltyInfo.name}
+                        ordersCount={loyaltyInfo.orders_count || 0}
+                        threshold={loyaltyInfo.threshold || 5}
+                        rewardTitle={loyaltyInfo.reward_title}
+                        compact
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="sm:col-span-2">
                 <Input
                   label="Email (optionnel)"

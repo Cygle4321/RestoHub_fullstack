@@ -72,6 +72,7 @@ Route::prefix('store/{slug}')->group(function () {
     Route::get('track', [StoreController::class, 'track']);
     Route::post('reviews', [StoreController::class, 'storeReview']);
     Route::get('payment/{transactionId}', [StoreController::class, 'payment']);
+    Route::get('loyalty', [StoreController::class, 'customerLoyalty']);
 
     // Salons de commande groupée
     Route::prefix('group')->group(function () {
@@ -109,9 +110,12 @@ Route::middleware(['auth:sanctum', 'role:owner,staff', 'restaurant', 'subscripti
         Route::put('categories/{category}', [CategoryController::class, 'update']);
         Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
 
-        // Customers
+        // Customers & CRM Fidélité
         Route::get('customers', [CustomerController::class, 'index']);
+        Route::get('customers/loyalty-settings', [CustomerController::class, 'loyaltySettings']);
+        Route::put('customers/loyalty-settings', [CustomerController::class, 'loyaltySettings']);
         Route::get('customers/{customer}', [CustomerController::class, 'show']);
+        Route::post('customers/{customer}/relance', [CustomerController::class, 'relance']);
         Route::get('customers-export', [ExportController::class, 'customers']);
 
         // Delivery

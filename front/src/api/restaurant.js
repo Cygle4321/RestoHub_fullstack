@@ -93,12 +93,15 @@ export const restaurantApi = {
   updateCategory: (id, body) => apiClient.put(`/restaurant/categories/${id}`, body),
   deleteCategory: (id) => apiClient.delete(`/restaurant/categories/${id}`),
 
-  // Customers
+  // Customers & CRM Fidélité
   customers: (params = {}) => {
     const q = new URLSearchParams(params).toString();
     return apiClient.get(`/restaurant/customers?${q}`);
   },
   customer: (id) => apiClient.get(`/restaurant/customers/${id}`),
+  relanceCustomer: (id, payload = {}) => apiClient.post(`/restaurant/customers/${id}/relance`, payload),
+  loyaltySettings: () => apiClient.get("/restaurant/customers/loyalty-settings"),
+  updateLoyaltySettings: (body) => apiClient.put("/restaurant/customers/loyalty-settings", body),
 
   // Delivery
   zones: () => apiClient.get("/restaurant/delivery/zones"),

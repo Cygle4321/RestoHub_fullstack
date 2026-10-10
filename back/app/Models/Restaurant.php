@@ -14,7 +14,7 @@ class Restaurant extends Model
         'name', 'slug', 'email', 'phone', 'address', 'description',
         'logo', 'cover', 'color', 'is_open', 'hours', 'social',
         'status', 'plan_id', 'trial_ends_at', 'subscription_ends_at',
-        'trial_reminder_sent_at',
+        'trial_reminder_sent_at', 'loyalty_settings',
     ];
 
     protected function casts(): array
@@ -25,6 +25,7 @@ class Restaurant extends Model
             'social' => 'array',
             'notifications_settings' => 'array',
             'payment_settings' => 'array',
+            'loyalty_settings' => 'array',
             'trial_ends_at' => 'datetime',
             'subscription_ends_at' => 'datetime',
             'trial_reminder_sent_at' => 'datetime',
