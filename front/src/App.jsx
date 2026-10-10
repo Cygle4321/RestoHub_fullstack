@@ -4,59 +4,85 @@ import { ToastProvider, Spinner } from "./components/ui";
 import { CartProvider } from "./store/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import RootErrorBoundary from "./components/common/RootErrorBoundary";
 
-const DashboardLayout = lazy(() => import("./layouts/DashboardLayout"));
-const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
-const StoreLayout = lazy(() => import("./layouts/StoreLayout"));
+// Helper sécurisé : rechargement automatique en cas de nouvelle version déployée sur le serveur
+function lazyRetry(componentImport) {
+  return lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error) {
+      const isChunkError =
+        error?.message?.includes("Failed to fetch dynamically imported module") ||
+        error?.message?.includes("Importing a module script failed") ||
+        error?.name === "ChunkLoadError";
 
-const Landing = lazy(() => import("./pages/public/Landing"));
-const Login = lazy(() => import("./pages/public/Login"));
-const Register = lazy(() => import("./pages/public/Register"));
-const ForgotPassword = lazy(() => import("./pages/public/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/public/ResetPassword"));
-const EmailVerified = lazy(() => import("./pages/public/EmailVerified"));
-const Terms = lazy(() => import("./pages/public/Terms"));
-const Privacy = lazy(() => import("./pages/public/Privacy"));
-const Onboarding = lazy(() => import("./pages/onboarding/Onboarding"));
+      if (isChunkError) {
+        const key = "restohub_retry_" + window.location.pathname;
+        const retried = sessionStorage.getItem(key);
+        if (!retried) {
+          sessionStorage.setItem(key, "true");
+          window.location.reload();
+          return new Promise(() => {});
+        }
+      }
+      throw error;
+    }
+  });
+}
 
-const DashboardHome = lazy(() => import("./pages/dashboard/DashboardHome"));
-const Orders = lazy(() => import("./pages/dashboard/Orders"));
-const Kitchen = lazy(() => import("./pages/dashboard/Kitchen"));
-const OrderDetails = lazy(() => import("./pages/dashboard/OrderDetails"));
-const Products = lazy(() => import("./pages/dashboard/Products"));
-const ProductForm = lazy(() => import("./pages/dashboard/ProductForm"));
-const Categories = lazy(() => import("./pages/dashboard/Categories"));
-const Customers = lazy(() => import("./pages/dashboard/Customers"));
-const CustomerDetails = lazy(() => import("./pages/dashboard/CustomerDetails"));
-const Delivery = lazy(() => import("./pages/dashboard/Delivery"));
-const Promotions = lazy(() => import("./pages/dashboard/Promotions"));
-const Analytics = lazy(() => import("./pages/dashboard/Analytics"));
-const ShopSettings = lazy(() => import("./pages/dashboard/ShopSettings"));
-const QrCode = lazy(() => import("./pages/dashboard/QrCode"));
-const Billing = lazy(() => import("./pages/dashboard/Billing"));
-const Settings = lazy(() => import("./pages/dashboard/Settings"));
-const Support = lazy(() => import("./pages/dashboard/Support"));
+const DashboardLayout = lazyRetry(() => import("./layouts/DashboardLayout"));
+const AdminLayout = lazyRetry(() => import("./layouts/AdminLayout"));
+const StoreLayout = lazyRetry(() => import("./layouts/StoreLayout"));
 
-const StoreHome = lazy(() => import("./pages/store/StoreHome"));
-const StoreMenu = lazy(() => import("./pages/store/StoreMenu"));
-const ProductDetails = lazy(() => import("./pages/store/ProductDetails"));
-const Cart = lazy(() => import("./pages/store/Cart"));
-const Checkout = lazy(() => import("./pages/store/Checkout"));
-const OrderConfirmation = lazy(() => import("./pages/store/OrderConfirmation"));
-const OrderTracking = lazy(() => import("./pages/store/OrderTracking"));
-const GroupOrder = lazy(() => import("./pages/store/GroupOrder"));
+const Landing = lazyRetry(() => import("./pages/public/Landing"));
+const Login = lazyRetry(() => import("./pages/public/Login"));
+const Register = lazyRetry(() => import("./pages/public/Register"));
+const ForgotPassword = lazyRetry(() => import("./pages/public/ForgotPassword"));
+const ResetPassword = lazyRetry(() => import("./pages/public/ResetPassword"));
+const EmailVerified = lazyRetry(() => import("./pages/public/EmailVerified"));
+const Terms = lazyRetry(() => import("./pages/public/Terms"));
+const Privacy = lazyRetry(() => import("./pages/public/Privacy"));
+const Onboarding = lazyRetry(() => import("./pages/onboarding/Onboarding"));
 
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminRestaurants = lazy(() => import("./pages/admin/AdminRestaurants"));
-const AdminRestaurantDetails = lazy(() => import("./pages/admin/AdminRestaurantDetails"));
-const AdminSubscriptions = lazy(() => import("./pages/admin/AdminSubscriptions"));
-const AdminPayments = lazy(() => import("./pages/admin/AdminPayments"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
-const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
-const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
-const AdminSupport = lazy(() => import("./pages/admin/AdminSupport"));
-const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const DashboardHome = lazyRetry(() => import("./pages/dashboard/DashboardHome"));
+const Orders = lazyRetry(() => import("./pages/dashboard/Orders"));
+const Kitchen = lazyRetry(() => import("./pages/dashboard/Kitchen"));
+const OrderDetails = lazyRetry(() => import("./pages/dashboard/OrderDetails"));
+const Products = lazyRetry(() => import("./pages/dashboard/Products"));
+const ProductForm = lazyRetry(() => import("./pages/dashboard/ProductForm"));
+const Categories = lazyRetry(() => import("./pages/dashboard/Categories"));
+const Customers = lazyRetry(() => import("./pages/dashboard/Customers"));
+const CustomerDetails = lazyRetry(() => import("./pages/dashboard/CustomerDetails"));
+const Delivery = lazyRetry(() => import("./pages/dashboard/Delivery"));
+const Promotions = lazyRetry(() => import("./pages/dashboard/Promotions"));
+const Analytics = lazyRetry(() => import("./pages/dashboard/Analytics"));
+const ShopSettings = lazyRetry(() => import("./pages/dashboard/ShopSettings"));
+const QrCode = lazyRetry(() => import("./pages/dashboard/QrCode"));
+const Billing = lazyRetry(() => import("./pages/dashboard/Billing"));
+const Settings = lazyRetry(() => import("./pages/dashboard/Settings"));
+const Support = lazyRetry(() => import("./pages/dashboard/Support"));
+
+const StoreHome = lazyRetry(() => import("./pages/store/StoreHome"));
+const StoreMenu = lazyRetry(() => import("./pages/store/StoreMenu"));
+const ProductDetails = lazyRetry(() => import("./pages/store/ProductDetails"));
+const Cart = lazyRetry(() => import("./pages/store/Cart"));
+const Checkout = lazyRetry(() => import("./pages/store/Checkout"));
+const OrderConfirmation = lazyRetry(() => import("./pages/store/OrderConfirmation"));
+const OrderTracking = lazyRetry(() => import("./pages/store/OrderTracking"));
+const GroupOrder = lazyRetry(() => import("./pages/store/GroupOrder"));
+
+const AdminDashboard = lazyRetry(() => import("./pages/admin/AdminDashboard"));
+const AdminRestaurants = lazyRetry(() => import("./pages/admin/AdminRestaurants"));
+const AdminRestaurantDetails = lazyRetry(() => import("./pages/admin/AdminRestaurantDetails"));
+const AdminSubscriptions = lazyRetry(() => import("./pages/admin/AdminSubscriptions"));
+const AdminPayments = lazyRetry(() => import("./pages/admin/AdminPayments"));
+const AdminUsers = lazyRetry(() => import("./pages/admin/AdminUsers"));
+const AdminOrders = lazyRetry(() => import("./pages/admin/AdminOrders"));
+const AdminAnalytics = lazyRetry(() => import("./pages/admin/AdminAnalytics"));
+const AdminSupport = lazyRetry(() => import("./pages/admin/AdminSupport"));
+const AdminSettings = lazyRetry(() => import("./pages/admin/AdminSettings"));
+const NotFound = lazyRetry(() => import("./pages/NotFound"));
 
 function RootLayout() {
   return (
@@ -86,6 +112,7 @@ function RedirectGroup() {
 const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <RootErrorBoundary />,
     children: [
       { path: "/", element: <Landing /> },
       { path: "/login", element: <Login /> },

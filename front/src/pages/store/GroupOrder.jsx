@@ -25,6 +25,7 @@ import {
   Info,
   BadgePercent,
   RotateCcw,
+  Star,
 } from "lucide-react";
 import {
   Badge,
@@ -541,16 +542,13 @@ export default function GroupOrder() {
       )}
 
       {/* Top Banner : Salon de Commande */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-950 p-6 text-white shadow-xl sm:p-8">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-950 p-4 sm:p-6 lg:p-8 text-white shadow-xl">
         <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-primary-500/20 blur-3xl pointer-events-none" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-500/20 px-3 py-1 text-xs font-bold text-primary-300 ring-1 ring-inset ring-primary-500/30">
-                <Users size={13} /> Commande Groupée
-              </span>
-              <span className="rounded-full bg-white/10 px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-wider text-white">
-                {code}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-500/20 px-2.5 py-1 text-xs font-bold text-primary-300 ring-1 ring-inset ring-primary-500/30">
+                <Users size={12} /> Salon {code}
               </span>
               <span
                 className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -575,105 +573,97 @@ export default function GroupOrder() {
                   }`}
                 />
                 {group.status === "completed"
-                  ? "Commande validée en cuisine ✓"
+                  ? "En cuisine ✓"
                   : isExpired
-                    ? "Session expirée"
+                    ? "Expiré"
                     : group.isLocked
-                      ? "Salon clôturé"
+                      ? "Clôturé"
                       : "Ouvert aux ajouts"}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-zinc-200">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span className={`inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs ${isExpired ? "text-rose-300 font-semibold" : "text-primary-300"}`}>
+                <Clock size={12} />
+                <span>
+                  {group.status === "completed"
+                    ? "Envoyé"
+                    : isExpired
+                      ? "Délai dépassé"
+                      : `~${timeLeftMinutes} min`}
                 </span>
-                <span>Synchro live multi-smartphones</span>
               </span>
             </div>
 
-            <h1 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="mt-2 text-xl font-black tracking-tight sm:text-2xl lg:text-3xl text-white">
               {group.name}
             </h1>
-            <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-zinc-300">
-              <span>Organisé par <strong className="text-white">{group.host}</strong></span>
-              <span>·</span>
-              <span className={`inline-flex items-center gap-1 ${isExpired ? "text-rose-300 font-semibold" : "text-primary-300"}`}>
-                <Clock size={13} />
-                {group.status === "completed"
-                  ? "Commande envoyée au restaurant"
-                  : isExpired
-                    ? "Délai de session dépassé"
-                    : `Clôture prévue dans ~${timeLeftMinutes} min`}
-              </span>
-              <span>·</span>
-              <span>{restaurant?.name}</span>
+            <p className="mt-1 text-xs sm:text-sm text-zinc-300">
+              Organisé par <strong className="text-white">{group.host}</strong> · <span className="text-zinc-400">{restaurant?.name || "Restaurant"}</span>
             </p>
           </div>
 
           {/* Actions d'invitation & gestion */}
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={() => setCreateModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-primary-400/40 bg-primary-500/20 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-primary-200 transition hover:bg-primary-500/30 active:scale-95 cursor-pointer"
-              title="Créer un nouveau salon pour aujourd'hui"
-            >
-              <Sparkles size={15} className="text-primary-300" />
-              <span>Nouveau salon</span>
-            </button>
-
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1 sm:pt-0">
             {!isExpired && (
               <button
                 onClick={shareOnWhatsApp}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-95"
               >
                 <MessageCircle size={16} />
                 <span>Inviter sur WhatsApp</span>
               </button>
             )}
 
-            <button
-              onClick={copyShareLink}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-white transition hover:bg-white/20 active:scale-95"
-              title="Copier le lien"
-            >
-              <Copy size={15} />
-              <span className="hidden sm:inline">Copier lien</span>
-            </button>
-
-            {isHost && (
+            <div className="flex items-center gap-2">
               <button
-                onClick={handleResetGroup}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-xs sm:text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
-                title="Vider les anciens plats et renouveler ce salon (+2h)"
+                onClick={copyShareLink}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-white/20 active:scale-95"
+                title="Copier le lien"
               >
-                <RotateCcw size={14} />
-                <span className="hidden md:inline">Réinitialiser</span>
+                <Copy size={14} />
+                <span>Copier lien</span>
               </button>
-            )}
 
-            {isHost && !isExpired && (
               <button
-                onClick={toggleLock}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-xs sm:text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
-                title={group.isLocked ? "Rouvrir le salon" : "Clôturer le salon"}
+                onClick={() => setCreateModalOpen(true)}
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-primary-400/40 bg-primary-500/20 px-3 py-2 text-xs sm:text-sm font-bold text-primary-200 transition hover:bg-primary-500/30 active:scale-95 cursor-pointer"
+                title="Créer un nouveau salon"
               >
-                {group.isLocked ? <Unlock size={15} /> : <Lock size={15} />}
-                <span className="hidden md:inline">{group.isLocked ? "Rouvrir" : "Clôturer"}</span>
+                <Sparkles size={14} className="text-primary-300" />
+                <span className="hidden xs:inline sm:inline">Nouveau</span>
               </button>
-            )}
+
+              {isHost && (
+                <button
+                  onClick={handleResetGroup}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-2.5 py-2 text-xs sm:text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
+                  title="Réinitialiser le salon"
+                >
+                  <RotateCcw size={14} />
+                </button>
+              )}
+
+              {isHost && !isExpired && (
+                <button
+                  onClick={toggleLock}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-2.5 py-2 text-xs sm:text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
+                  title={group.isLocked ? "Rouvrir le salon" : "Clôturer le salon"}
+                >
+                  {group.isLocked ? <Unlock size={14} /> : <Lock size={14} />}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Barre de participant actuel */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
-          <div className="flex items-center gap-2.5">
-            <span className="text-xs text-zinc-400">Vous commandez pour :</span>
+        <div className="mt-4 sm:mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-3 sm:pt-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-zinc-400">Votre prénom :</span>
             <button
               onClick={() => {
                 setTempUserName(currentUser);
                 setEditingUserModal(true);
               }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 shadow-xs"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold text-white transition hover:bg-white/25 active:scale-95 shadow-xs"
             >
               <span className="h-2 w-2 rounded-full bg-primary-400" />
               <span>{currentUser || "Entrez votre prénom"}</span>
@@ -684,9 +674,9 @@ export default function GroupOrder() {
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-zinc-400">
-            <span>Participants actifs ({participants.length}) :</span>
+            <span>Équipe ({participants.length}) :</span>
             <div className="flex -space-x-1.5 overflow-hidden">
-              {participants.slice(0, 4).map((p, i) => (
+              {participants.slice(0, 4).map((p) => (
                 <span
                   key={p}
                   className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary-600 ring-2 ring-zinc-900 text-[10px] font-bold text-white uppercase"
@@ -705,24 +695,28 @@ export default function GroupOrder() {
         </div>
       </div>
 
-      {/* Switcher tabs sur Mobile */}
-      <div className="mt-6 flex lg:hidden border-b border-zinc-200">
+      {/* Switcher tabs sur Mobile (Sticky sous le header pour accès instantané pendant le scroll) */}
+      <div className="sticky top-16 z-20 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-md border-b border-zinc-200 flex lg:hidden shadow-xs gap-2">
         <button
           onClick={() => setActiveTab("menu")}
-          className={`flex-1 pb-3 text-sm font-bold text-center border-b-2 transition flex items-center justify-center gap-1.5 ${activeTab === "menu" ? "border-primary-600 text-primary-600" : "border-transparent text-zinc-500"
-            }`}
+          className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition flex items-center justify-center gap-1.5 ${
+            activeTab === "menu" ? "bg-zinc-900 text-white shadow-xs" : "bg-zinc-100 text-zinc-600 hover:text-zinc-900"
+          }`}
         >
-          <UtensilsCrossed size={15} />
+          <UtensilsCrossed size={14} />
           <span>Choisir mes plats</span>
         </button>
         <button
           onClick={() => setActiveTab("cart")}
-          className={`flex-1 pb-3 text-sm font-bold text-center border-b-2 transition flex items-center justify-center gap-1.5 ${activeTab === "cart" ? "border-primary-600 text-primary-600" : "border-transparent text-zinc-500"
-            }`}
+          className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition flex items-center justify-center gap-1.5 ${
+            activeTab === "cart" ? "bg-zinc-900 text-white shadow-xs" : "bg-zinc-100 text-zinc-600 hover:text-zinc-900"
+          }`}
         >
-          <Users size={15} />
+          <Users size={14} />
           <span>Panier d'équipe</span>
-          <span className="rounded-full bg-primary-500 px-2 py-0.5 text-[11px] text-white font-bold">
+          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
+            activeTab === "cart" ? "bg-primary-500 text-white" : "bg-primary-100 text-primary-800"
+          }`}>
             {group.items.length}
           </span>
         </button>
@@ -765,34 +759,67 @@ export default function GroupOrder() {
               />
             </Card>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-3">
               {filteredProducts.map((p) => (
                 <Card key={p.id} className="group flex flex-col overflow-hidden" hover>
-                  <div className="relative aspect-[4/3] bg-gradient-to-br from-primary-50 to-orange-50 overflow-hidden flex items-center justify-center">
+                  <div
+                    onClick={() => openProductConfig(p)}
+                    className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br from-primary-50 to-orange-50 text-primary-300 transition group-hover:from-primary-100 group-hover:to-orange-100 cursor-pointer"
+                  >
                     {p.image ? (
-                      <img src={p.image} alt={p.name} className="h-full w-full object-cover transition group-hover:scale-105" />
+                      <img
+                        src={p.image}
+                        alt={p.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
                     ) : (
-                      <UtensilsCrossed size={32} className="text-primary-300" />
+                      <UtensilsCrossed size={32} strokeWidth={1.25} />
+                    )}
+                    {p.featured && (
+                      <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-primary-600 shadow-xs backdrop-blur">
+                        <Star size={9} className="fill-current" /> Populaire
+                      </span>
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col justify-between p-3 sm:p-3.5">
-                    <div>
-                      <h3 className="line-clamp-1 text-xs sm:text-sm font-semibold text-zinc-900">{p.name}</h3>
-                      {p.description && (
-                        <p className="mt-1 line-clamp-2 text-[11px] text-zinc-500 leading-relaxed">{p.description}</p>
+
+                  <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
+                    <h3
+                      onClick={() => openProductConfig(p)}
+                      className="line-clamp-1 text-xs font-semibold text-zinc-900 transition group-hover:text-primary-700 sm:text-[13px] cursor-pointer"
+                      title={p.name}
+                    >
+                      {p.name}
+                    </h3>
+                    <p className="mt-1 line-clamp-2 flex-1 text-xs leading-relaxed text-zinc-500">
+                      {p.description}
+                    </p>
+
+                    <div className="mt-2.5 flex items-center justify-between gap-1.5">
+                      <span className="min-w-0 truncate text-xs font-bold text-zinc-900 sm:text-sm">
+                        {fmt(p.price)}
+                      </span>
+                      {!p.available && (
+                        <Badge variant="danger" className="shrink-0 text-[10px] px-1.5 py-0.5">
+                          Épuisé
+                        </Badge>
                       )}
                     </div>
-                    <div className="mt-3 flex items-center justify-between gap-1.5 pt-1 border-t border-zinc-100">
-                      <span className="text-xs sm:text-sm font-bold text-zinc-900">{fmt(p.price)}</span>
-                      <button
-                        onClick={() => openProductConfig(p)}
-                        disabled={group.isLocked || isExpired || !p.available}
-                        className="inline-flex items-center gap-1 rounded-lg bg-primary-600 px-2.5 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-primary-700 disabled:opacity-40"
-                      >
-                        <Plus size={13} strokeWidth={2.5} />
-                        <span className="truncate max-w-[70px]">{currentUser ? currentUser : "Moi"}</span>
-                      </button>
-                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openProductConfig(p);
+                      }}
+                      disabled={group.isLocked || isExpired || !p.available}
+                      className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary-500 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
+                      title={currentUser ? `Ajouter pour ${currentUser}` : "Ajouter à mon nom"}
+                    >
+                      <Plus size={14} strokeWidth={2.5} className="shrink-0" />
+                      <span className="truncate">{currentUser || "Moi"}</span>
+                    </button>
                   </div>
                 </Card>
               ))}
@@ -994,6 +1021,29 @@ export default function GroupOrder() {
           </Card>
         </div>
       </div>
+
+      {/* Barre flottante du panier d'équipe sur mobile quand on parcourt le menu */}
+      {group.items.length > 0 && activeTab === "menu" && (
+        <div className="fixed bottom-4 inset-x-4 z-30 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setActiveTab("cart")}
+            className="w-full flex items-center justify-between rounded-2xl bg-zinc-900 text-white px-4 py-3 shadow-2xl border border-zinc-800 active:scale-95 transition cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-500 text-xs font-black text-white">
+                {group.items.length}
+              </span>
+              <span className="text-xs sm:text-sm font-bold truncate">
+                Voir le panier d'équipe
+              </span>
+            </div>
+            <span className="text-xs sm:text-sm font-black text-primary-400 shrink-0">
+              {fmt(grandTotal)} →
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Modal Saisie / Changement de Prénom pour les collègues */}
       <Modal

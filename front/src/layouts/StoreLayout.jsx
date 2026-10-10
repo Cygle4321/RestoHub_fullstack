@@ -218,13 +218,13 @@ function StoreLayoutInner() {
         </div>
       )}
 
-      {/* Floating WhatsApp Quick Contact Button */}
-      {restaurant?.phone && (
+      {/* Floating WhatsApp Quick Contact Button (masqué sur la page de commande groupée qui a ses propres boutons) */}
+      {!location.pathname.includes("/group") && restaurant?.phone && (
         <a
           href={waLink(restaurant.phone, `Bonjour *${restaurant.name || "Restaurant"}* ! J'aimerais avoir des informations sur votre menu 🍲`)}
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-20 md:bottom-6 right-4 z-40 flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 shadow-lg shadow-emerald-600/30 transition-all hover:scale-105 active:scale-95 text-xs font-bold ring-2 ring-white/80"
+          className={`fixed ${hideStickyCart ? "bottom-4" : "bottom-20 md:bottom-6"} right-4 z-40 flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 shadow-lg shadow-emerald-600/30 transition-all hover:scale-105 active:scale-95 text-xs font-bold ring-2 ring-white/80`}
           title="Poser une question sur WhatsApp"
         >
           <span className="flex h-5 w-5 items-center justify-center">
