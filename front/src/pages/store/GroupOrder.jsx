@@ -544,14 +544,14 @@ export default function GroupOrder() {
       {/* Top Banner : Salon de Commande */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-950 p-4 sm:p-6 lg:p-8 text-white shadow-xl">
         <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-primary-500/20 blur-3xl pointer-events-none" />
-        <div className="relative flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex flex-col gap-3.5 sm:gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-500/20 px-2.5 py-1 text-xs font-bold text-primary-300 ring-1 ring-inset ring-primary-500/30">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-500/20 px-2.5 py-0.5 sm:py-1 text-[11px] sm:text-xs font-bold text-primary-300 ring-1 ring-inset ring-primary-500/30">
                 <Users size={12} /> Salon {code}
               </span>
               <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 sm:py-1 text-[11px] sm:text-xs font-semibold ${
                   group.status === "completed"
                     ? "bg-primary-500/20 text-primary-300 ring-1 ring-inset ring-primary-500/30"
                     : isExpired
@@ -580,7 +580,7 @@ export default function GroupOrder() {
                       ? "Clôturé"
                       : "Ouvert aux ajouts"}
               </span>
-              <span className={`inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-xs ${isExpired ? "text-rose-300 font-semibold" : "text-primary-300"}`}>
+              <span className={`inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-0.5 sm:py-1 text-[11px] sm:text-xs ${isExpired ? "text-rose-300 font-semibold" : "text-primary-300"}`}>
                 <Clock size={12} />
                 <span>
                   {group.status === "completed"
@@ -592,25 +592,34 @@ export default function GroupOrder() {
               </span>
             </div>
 
-            <h1 className="mt-2 text-xl font-black tracking-tight sm:text-2xl lg:text-3xl text-white">
+            <h1 className="mt-2 text-lg font-black tracking-tight sm:text-2xl lg:text-3xl text-white break-words">
               {group.name}
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-zinc-300">
+            <p className="mt-0.5 text-xs sm:text-sm text-zinc-300">
               Organisé par <strong className="text-white">{group.host}</strong> · <span className="text-zinc-400">{restaurant?.name || "Restaurant"}</span>
             </p>
           </div>
 
           {/* Actions d'invitation & gestion */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1 sm:pt-0">
-            {!isExpired && (
+            {group.status === "completed" ? (
+              <button
+                onClick={shareRefundsWhatsApp}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-95 cursor-pointer"
+                title="Partager les montants dus par chacun sur WhatsApp"
+              >
+                <MessageCircle size={16} />
+                <span>Partager quotes-parts WhatsApp</span>
+              </button>
+            ) : !isExpired && !group.isLocked ? (
               <button
                 onClick={shareOnWhatsApp}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-95"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-95 cursor-pointer"
               >
                 <MessageCircle size={16} />
                 <span>Inviter sur WhatsApp</span>
               </button>
-            )}
+            ) : null}
 
             <div className="flex items-center gap-2">
               <button
@@ -641,7 +650,7 @@ export default function GroupOrder() {
                 </button>
               )}
 
-              {isHost && !isExpired && (
+              {isHost && !isExpired && group.status !== "completed" && (
                 <button
                   onClick={toggleLock}
                   className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-2.5 py-2 text-xs sm:text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
@@ -733,15 +742,16 @@ export default function GroupOrder() {
               onChange={setSearch}
               placeholder="Rechercher un plat pour vous…"
             />
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none">
               {catNames.map((c) => (
                 <button
                   key={c}
                   onClick={() => setSelectedCat(c)}
-                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${selectedCat === c
+                  className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                    selectedCat === c
                       ? "bg-zinc-900 text-white shadow-xs"
-                      : "border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50"
-                    }`}
+                      : "bg-white text-zinc-600 ring-1 ring-inset ring-zinc-200 hover:bg-zinc-50 hover:text-zinc-900"
+                  }`}
                 >
                   {c}
                 </button>
@@ -813,12 +823,16 @@ export default function GroupOrder() {
                         e.stopPropagation();
                         openProductConfig(p);
                       }}
-                      disabled={group.isLocked || isExpired || !p.available}
+                      disabled={group.isLocked || isExpired || !p.available || group.status === "completed"}
                       className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary-500 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
-                      title={currentUser ? `Ajouter pour ${currentUser}` : "Ajouter à mon nom"}
+                      title={group.status === "completed" ? "Commande déjà validée en cuisine" : currentUser ? `Ajouter pour ${currentUser}` : "Ajouter à mon nom"}
                     >
-                      <Plus size={14} strokeWidth={2.5} className="shrink-0" />
-                      <span className="truncate">{currentUser || "Moi"}</span>
+                      {group.status === "completed" ? (
+                        <CheckCircle2 size={13} className="shrink-0" />
+                      ) : (
+                        <Plus size={14} strokeWidth={2.5} className="shrink-0" />
+                      )}
+                      <span className="truncate">{group.status === "completed" ? "Validée" : (currentUser || "Moi")}</span>
                     </button>
                   </div>
                 </Card>
@@ -852,7 +866,7 @@ export default function GroupOrder() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
+                <div className="space-y-4 lg:max-h-[500px] lg:overflow-y-auto pr-1">
                   {Object.entries(itemsByParticipant).map(([person, list]) => {
                     const personTotal = totalsByParticipant[person] || 0;
                     const isMe = person === currentUser;
@@ -1019,6 +1033,16 @@ export default function GroupOrder() {
               </div>
             </div>
           </Card>
+
+          {/* Bouton retour au menu sur Mobile */}
+          <button
+            type="button"
+            onClick={() => setActiveTab("menu")}
+            className="w-full mt-3 flex items-center justify-center gap-2 rounded-2xl border border-zinc-200 bg-white py-3 text-xs font-bold text-zinc-700 shadow-xs transition hover:bg-zinc-50 active:scale-95 lg:hidden cursor-pointer"
+          >
+            <UtensilsCrossed size={14} />
+            <span>← Continuer à ajouter des plats</span>
+          </button>
         </div>
       </div>
 
