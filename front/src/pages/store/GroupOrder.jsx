@@ -453,7 +453,7 @@ export default function GroupOrder() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-28 pt-4">
+    <div className="mx-auto max-w-6xl px-3 sm:px-4 pb-28 pt-4 w-full min-w-0">
       <SEO
         title={`Commande Groupée ${code} — ${restaurant?.name || "Restaurant"}`}
         noindex
@@ -602,16 +602,7 @@ export default function GroupOrder() {
 
           {/* Actions d'invitation & gestion */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1 sm:pt-0">
-            {group.status === "completed" ? (
-              <button
-                onClick={shareRefundsWhatsApp}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-95 cursor-pointer"
-                title="Partager les montants dus par chacun sur WhatsApp"
-              >
-                <MessageCircle size={16} />
-                <span>Partager quotes-parts WhatsApp</span>
-              </button>
-            ) : !isExpired && !group.isLocked ? (
+            {group.status !== "completed" && !isExpired && !group.isLocked ? (
               <button
                 onClick={shareOnWhatsApp}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-95 cursor-pointer"
@@ -621,7 +612,7 @@ export default function GroupOrder() {
               </button>
             ) : null}
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={copyShareLink}
                 className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs sm:text-sm font-semibold text-white transition hover:bg-white/20 active:scale-95"
@@ -633,11 +624,11 @@ export default function GroupOrder() {
 
               <button
                 onClick={() => setCreateModalOpen(true)}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-primary-400/40 bg-primary-500/20 px-3 py-2 text-xs sm:text-sm font-bold text-primary-200 transition hover:bg-primary-500/30 active:scale-95 cursor-pointer"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 rounded-xl border border-primary-400/40 bg-primary-500/20 px-3 py-2 text-xs sm:text-sm font-bold text-primary-200 transition hover:bg-primary-500/30 active:scale-95 cursor-pointer"
                 title="Créer un nouveau salon"
               >
                 <Sparkles size={14} className="text-primary-300" />
-                <span className="hidden xs:inline sm:inline">Nouveau</span>
+                <span>Nouveau</span>
               </button>
 
               {isHost && (
@@ -705,7 +696,7 @@ export default function GroupOrder() {
       </div>
 
       {/* Switcher tabs sur Mobile (Sticky sous le header pour accès instantané pendant le scroll) */}
-      <div className="sticky top-16 z-20 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-md border-b border-zinc-200 flex lg:hidden shadow-xs gap-2">
+      <div className="sticky top-16 z-20 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 bg-white/95 backdrop-blur-md border-b border-zinc-200 flex lg:hidden shadow-xs gap-2">
         <button
           onClick={() => setActiveTab("menu")}
           className={`flex-1 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition flex items-center justify-center gap-1.5 ${
@@ -732,22 +723,22 @@ export default function GroupOrder() {
       </div>
 
       {/* Grille Principale */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_390px] items-start">
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_390px] items-start w-full min-w-0">
         {/* Colonne 1 : Le Menu interactif */}
-        <div className={`space-y-6 ${activeTab === "cart" ? "hidden lg:block" : "block"}`}>
+        <div className={`w-full min-w-0 space-y-5 ${activeTab === "cart" ? "hidden lg:block" : "block"}`}>
           {/* Barre de filtre & recherche */}
-          <div className="space-y-3">
+          <div className="space-y-3 w-full min-w-0">
             <SearchInput
               value={search}
               onChange={setSearch}
               placeholder="Rechercher un plat pour vous…"
             />
-            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none">
+            <div className="w-full min-w-0 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {catNames.map((c) => (
                 <button
                   key={c}
                   onClick={() => setSelectedCat(c)}
-                  className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                  className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                     selectedCat === c
                       ? "bg-zinc-900 text-white shadow-xs"
                       : "bg-white text-zinc-600 ring-1 ring-inset ring-zinc-200 hover:bg-zinc-50 hover:text-zinc-900"
@@ -769,49 +760,52 @@ export default function GroupOrder() {
               />
             </Card>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-3">
+            <div className="w-full min-w-0 grid grid-cols-2 gap-2.5 sm:gap-4 md:grid-cols-3 lg:grid-cols-3">
               {filteredProducts.map((p) => (
-                <Card key={p.id} className="group flex flex-col overflow-hidden" hover>
+                <Card key={p.id} className="group flex flex-col overflow-hidden rounded-xl sm:rounded-2xl" hover>
                   <div
                     onClick={() => openProductConfig(p)}
-                    className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br from-primary-50 to-orange-50 text-primary-300 transition group-hover:from-primary-100 group-hover:to-orange-100 cursor-pointer"
+                    className="block shrink-0 cursor-pointer"
                   >
-                    {p.image ? (
-                      <img
-                        src={p.image}
-                        alt={p.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <UtensilsCrossed size={32} strokeWidth={1.25} />
-                    )}
-                    {p.featured && (
-                      <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold text-primary-600 shadow-xs backdrop-blur">
-                        <Star size={9} className="fill-current" /> Populaire
-                      </span>
-                    )}
+                    <div className="relative flex aspect-[16/11] sm:aspect-[4/3] w-full items-center justify-center overflow-hidden bg-gradient-to-br from-primary-50 to-orange-50 text-primary-300 transition group-hover:from-primary-100 group-hover:to-orange-100">
+                      {p.image ? (
+                        <img
+                          src={p.image}
+                          alt={p.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <UtensilsCrossed size={26} strokeWidth={1.25} />
+                      )}
+                      {p.featured && (
+                        <span className="absolute left-1.5 top-1.5 sm:left-2 sm:top-2 flex items-center gap-1 rounded-full bg-white/90 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-primary-600 shadow-xs backdrop-blur">
+                          <Star size={8} className="fill-current" /> Populaire
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex flex-1 flex-col p-2.5 sm:p-3.5">
-                    <h3
-                      onClick={() => openProductConfig(p)}
-                      className="line-clamp-1 text-xs font-semibold text-zinc-900 transition group-hover:text-primary-700 sm:text-[13px] cursor-pointer"
-                      title={p.name}
-                    >
-                      {p.name}
-                    </h3>
-                    <p className="mt-1 line-clamp-2 flex-1 text-xs leading-relaxed text-zinc-500">
+                  <div className="flex flex-1 flex-col p-2 sm:p-3">
+                    <div onClick={() => openProductConfig(p)} className="cursor-pointer">
+                      <h3
+                        className="line-clamp-1 text-xs font-semibold text-zinc-900 transition group-hover:text-primary-700 sm:text-[13px]"
+                        title={p.name}
+                      >
+                        {p.name}
+                      </h3>
+                    </div>
+                    <p className="mt-0.5 line-clamp-2 flex-1 text-[11px] leading-relaxed text-zinc-500 sm:text-xs">
                       {p.description}
                     </p>
 
-                    <div className="mt-2.5 flex items-center justify-between gap-1.5">
+                    <div className="mt-2 flex items-center justify-between gap-1">
                       <span className="min-w-0 truncate text-xs font-bold text-zinc-900 sm:text-sm">
                         {fmt(p.price)}
                       </span>
                       {!p.available && (
-                        <Badge variant="danger" className="shrink-0 text-[10px] px-1.5 py-0.5">
+                        <Badge variant="danger" className="shrink-0 text-[9px] px-1 py-0.5 sm:text-[10px] sm:px-1.5">
                           Épuisé
                         </Badge>
                       )}
@@ -824,13 +818,13 @@ export default function GroupOrder() {
                         openProductConfig(p);
                       }}
                       disabled={group.isLocked || isExpired || !p.available || group.status === "completed"}
-                      className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary-500 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="mt-2 flex w-full items-center justify-center gap-1 rounded-xl bg-primary-500 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-white shadow-xs transition hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-40"
                       title={group.status === "completed" ? "Commande déjà validée en cuisine" : currentUser ? `Ajouter pour ${currentUser}` : "Ajouter à mon nom"}
                     >
                       {group.status === "completed" ? (
-                        <CheckCircle2 size={13} className="shrink-0" />
+                        <CheckCircle2 size={12} className="shrink-0" />
                       ) : (
-                        <Plus size={14} strokeWidth={2.5} className="shrink-0" />
+                        <Plus size={13} strokeWidth={2.5} className="shrink-0" />
                       )}
                       <span className="truncate">{group.status === "completed" ? "Validée" : (currentUser || "Moi")}</span>
                     </button>
