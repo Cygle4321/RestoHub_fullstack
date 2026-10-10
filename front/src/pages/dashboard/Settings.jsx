@@ -43,7 +43,7 @@ export default function Settings() {
   const [inviteModal, setInviteModal] = useState(false);
   const [invite, setInvite] = useState({ email: "", role: "staff", name: "" });
   const [notif, setNotif] = useState({ order: true, cancel: true, tickets: true, reminder: false, marketing: false });
-  const [pay, setPay] = useState({ orange: true, mtn: true, wave: false, card: false, cod: true });
+  const [pay, setPay] = useState({ mtn: true, moov: true, celtiis: true, orange: true, wave: false, card: false, cod: true });
   const [security, setSecurity] = useState({ current_password: "", password: "", password_confirmation: "" });
   const [sessions, setSessions] = useState([]);
   const [twoFactor, setTwoFactor] = useState({ enabled: false, loading: false, pending: false, secret: "", qrUri: "", qrData: "", code: "", confirming: false });
@@ -392,8 +392,10 @@ export default function Settings() {
                   <p className="mb-3 text-sm font-medium text-gray-700">Mobile Money</p>
                   <div className="space-y-3">
                     {[
+                      { k: "mtn", label: "MTN MoMo (Bénin & Afrique)" },
+                      { k: "moov", label: "Moov Money" },
+                      { k: "celtiis", label: "Celtiis Cash (Bénin)" },
                       { k: "orange", label: "Orange Money" },
-                      { k: "mtn", label: "MTN MoMo" },
                       { k: "wave", label: "Wave" },
                     ].map((p) => (
                       <label key={p.k} className="flex items-center gap-3 text-sm text-gray-700">

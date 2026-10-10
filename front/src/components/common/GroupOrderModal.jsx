@@ -207,7 +207,7 @@ export default function GroupOrderModal({ open, onClose, slug = "demo" }) {
             </div>
             <div className="flex items-start gap-1.5">
               <CheckCircle2 size={13} className="text-primary-500 shrink-0 mt-0.5" />
-              <span>Calcul Wave / Orange Money auto</span>
+              <span>Calcul des quotes-parts auto</span>
             </div>
           </div>
         </div>

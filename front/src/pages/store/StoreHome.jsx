@@ -182,7 +182,7 @@ export default function StoreHome() {
                 Commandez ensemble entre collègues ou amis
               </h2>
               <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-                Partagez un lien en 1 clic sur WhatsApp : chacun choisit son plat sur son téléphone, la cuisine prépare des boîtes repas étiquetées à chaque prénom, et l'application calcule automatiquement la quote-part Wave / Orange Money de chacun !
+                Partagez un lien en 1 clic sur WhatsApp : chacun choisit son plat sur son téléphone, la cuisine prépare des boîtes repas étiquetées à chaque prénom, et l'application calcule automatiquement la quote-part de chacun pour un remboursement simplifié !
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2.5 shrink-0">

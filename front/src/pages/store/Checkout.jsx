@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Bike, Store, Smartphone, CreditCard, Banknote, ShoppingBag, Loader2, CheckCircle2, Users } from "lucide-react";
+import { Bike, Store, Smartphone, CreditCard, Banknote, ShoppingBag, Loader2, CheckCircle2, Users, X, XCircle, Tag, BadgePercent } from "lucide-react";
 import { Card, CardHeader, Button, Input, Textarea, Select, EmptyState, useToast } from "../../components/ui";
 import { useCart } from "../../store/CartContext";
 import { useStore } from "../../store/StoreContext";
@@ -15,8 +15,42 @@ export default function Checkout() {
   const toast = useToast();
   const navigate = useNavigate();
   const { state } = useLocation();
-  const promoCode = state?.promoCode || "";
-  const promo = state?.promo || null;
+  const [promoCode, setPromoCode] = useState(state?.promoCode || "");
+  const [promo, setPromo] = useState(state?.promo || null);
+  const [promoInput, setPromoInput] = useState(state?.promoCode || "");
+  const [checkingPromo, setCheckingPromo] = useState(false);
+  const [promoError, setPromoError] = useState("");
+
+  const applyPromo = async () => {
+    const value = promoInput.trim().toUpperCase();
+    if (!value) return false;
+    setCheckingPromo(true);
+    setPromoError("");
+    try {
+      const res = await storeApi.verifyPromo(slug, { code: value, subtotal: total, mode });
+      if (res.valid) {
+        setPromo(res);
+        setPromoCode(res.code);
+        toast(`Code promo ${res.code} appliqué !`);
+        return true;
+      }
+      setPromo(null);
+      setPromoError(res.message || "Code promo invalide.");
+      return false;
+    } catch {
+      setPromoError("Impossible de vérifier le code promo.");
+      return false;
+    } finally {
+      setCheckingPromo(false);
+    }
+  };
+
+  const removePromo = () => {
+    setPromo(null);
+    setPromoCode("");
+    setPromoInput("");
+    setPromoError("");
+  };
 
   const isGroupOrder = Boolean(state?.isGroupOrder);
   const groupCode = state?.groupCode || "";
@@ -31,7 +65,7 @@ export default function Checkout() {
   const [zone, setZone] = useState(zones[0]?.id ?? "");
   const [mode, setMode] = useState("Livraison");
   const [payment, setPayment] = useState("Mobile Money");
-  const [provider, setProvider] = useState("Orange");
+  const [provider, setProvider] = useState("MTN");
   const [cardNumber, setCardNumber] = useState("");
   const [cardExp, setCardExp] = useState("");
   const [cardCvc, setCardCvc] = useState("");
@@ -88,7 +122,7 @@ export default function Checkout() {
         notes: customerNotes,
         zoneId: selectedZone?.id,
         payment,
-        promoCode,
+        promoCode: promo?.code || promoCode || undefined,
         group_code: isGroupOrder ? groupCode : undefined,
         items: items.map((it) => ({
           product_id: it.id,
@@ -239,7 +273,7 @@ export default function Checkout() {
                 <input type="radio" className="mt-0.5 h-4 w-4 accent-primary-600" checked={payment === "Mobile Money"} onChange={() => setPayment("Mobile Money")} />
                 <span>
                   <span className="flex items-center gap-1.5 font-semibold text-zinc-900"><Smartphone size={15} /> Mobile Money</span>
-                  <span className="mt-0.5 block text-xs text-zinc-500">Orange, MTN, Wave</span>
+                  <span className="mt-0.5 block text-xs text-zinc-500">MTN, Moov, Celtiis, Wave, Orange</span>
                 </span>
               </label>
               {/* Carte bancaire — temporairement désactivée
@@ -264,7 +298,7 @@ export default function Checkout() {
               <div className="border-t border-zinc-100 p-5">
                 <p className="mb-2 text-sm font-medium text-zinc-700">Opérateur</p>
                 <div className="flex flex-wrap gap-2">
-                  {["Orange", "MTN", "Wave"].map((p) => (
+                  {["MTN", "Moov", "Celtiis", "Wave", "Orange"].map((p) => (
                     <button
                       key={p}
                       type="button"
@@ -298,15 +332,62 @@ export default function Checkout() {
           <Card>
             <CardHeader title="Résumé de la commande" />
             <div className="space-y-2 p-5 text-sm">
-              {promo && (
-                <div className="mb-1 flex items-center justify-between rounded-lg bg-success-50 px-3 py-2 text-xs font-semibold text-success-700 ring-1 ring-inset ring-success-200">
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 size={14} /> Code promo {promo.code} appliqué
-                  </span>
-                  {promo.type === "percent" && <span>−{promo.value}%</span>}
-                  {promo.type === "fixed" && <span>−{fmt(promo.value)}</span>}
-                </div>
-              )}
+              {/* Code promo / Coupon de réduction */}
+              <div className="pb-2 border-b border-zinc-100">
+                {!promo ? (
+                  <div>
+                    <div className="flex gap-2">
+                      <input
+                        value={promoInput}
+                        onChange={(e) => {
+                          setPromoInput(e.target.value.toUpperCase());
+                          setPromoError("");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            applyPromo();
+                          }
+                        }}
+                        placeholder={isGroupOrder ? "Code promo (ex: GROUPE10, PROMO10)" : "Code promo (ex: PROMO10)"}
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold uppercase tracking-wider placeholder:font-normal placeholder:normal-case placeholder:text-zinc-400 focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/10"
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="shrink-0 px-3 text-xs"
+                        onClick={applyPromo}
+                        disabled={checkingPromo || !promoInput.trim()}
+                      >
+                        {checkingPromo ? <Loader2 size={13} className="animate-spin" /> : "Appliquer"}
+                      </Button>
+                    </div>
+                    {promoError && (
+                      <p className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-danger-600">
+                        <XCircle size={12} /> {promoError}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between rounded-xl bg-success-50 px-3 py-2 text-xs font-semibold text-success-700 ring-1 ring-inset ring-success-200">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 size={14} /> Code {promo.code} appliqué
+                      {promo.type === "percent" && <span>(−{promo.value}%)</span>}
+                      {promo.type === "fixed" && <span>(−{fmt(promo.value)})</span>}
+                      {promo.type === "free_delivery" && <span>(Livraison offerte)</span>}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={removePromo}
+                      className="text-success-600 hover:text-success-800 p-0.5 rounded transition"
+                      title="Retirer le code"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
               {items.map((it) => {
                 const { cleanName, participant } = parseItemParticipant(it.name);
                 return (

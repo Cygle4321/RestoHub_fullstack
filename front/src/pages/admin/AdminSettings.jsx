@@ -152,7 +152,7 @@ export default function AdminSettings() {
                   <div className="flex items-center justify-between rounded-lg border border-gray-200 p-4">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">Mobile Money</p>
-                      <p className="text-xs text-gray-500">Orange Money, MTN MoMo, Wave, Moov Money</p>
+                      <p className="text-xs text-gray-500">MTN MoMo, Moov Money, Celtiis Cash, Orange Money, Wave</p>
                     </div>
                     <Toggle checked={payments.mobileMoney} onChange={(v) => setPayments({ ...payments, mobileMoney: v })} />
                   </div>

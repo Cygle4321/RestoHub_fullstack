@@ -134,6 +134,8 @@ class DatabaseSeeder extends Seeder
         Promotion::create(['restaurant_id' => $restaurant->id, 'code' => 'PROMO10',   'type' => 'percent',      'value' => 10, 'min_order' => 5000, 'usage_limit' => 500, 'usage_count' => 47, 'is_active' => true]);
         Promotion::create(['restaurant_id' => $restaurant->id, 'code' => 'WELCOME5',  'type' => 'fixed',        'value' => 500,'min_order' => 0,    'usage_limit' => 300, 'usage_count' => 23, 'is_active' => true]);
         Promotion::create(['restaurant_id' => $restaurant->id, 'code' => 'LIVRAISON', 'type' => 'free_delivery','value' => 0,  'min_order' => 0,    'usage_limit' => null,'usage_count' => 31, 'is_active' => true]);
+        Promotion::create(['restaurant_id' => $restaurant->id, 'code' => 'GROUPE10',  'type' => 'percent',      'value' => 10, 'min_order' => 5000, 'usage_limit' => null,'usage_count' => 12, 'is_active' => true]);
+        Promotion::create(['restaurant_id' => $restaurant->id, 'code' => 'BUREAU20',  'type' => 'percent',      'value' => 20, 'min_order' => 15000,'usage_limit' => null,'usage_count' => 5,  'is_active' => true]);
 
         // ──────────────────────────────────────────
         // ZONES DE LIVRAISON

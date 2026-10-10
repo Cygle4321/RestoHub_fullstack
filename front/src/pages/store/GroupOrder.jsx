@@ -23,6 +23,7 @@ import {
   MessageCircle,
   Tag,
   Info,
+  BadgePercent,
 } from "lucide-react";
 import {
   Badge,
@@ -203,7 +204,7 @@ export default function GroupOrder() {
       `---------------------------------`,
       ...Object.entries(totalsByParticipant).map(([person, amt]) => `• *${person}* : *${fmt(amt)}*`),
       `---------------------------------`,
-      `👉 Merci d'envoyer votre montant par Wave / Orange Money à *${group.host}* ! Bon appétit l'équipe 🍲`,
+      `👉 Merci de régler votre part par Mobile Money ou votre moyen de paiement habituel à *${group.host}* ! Bon appétit l'équipe 🍲`,
     ];
     const message = encodeURIComponent(lines.join("\n"));
     window.open(`https://wa.me/?text=${message}`, "_blank", "noopener");
@@ -786,7 +787,7 @@ export default function GroupOrder() {
                   </div>
                   <p className="text-[10px] text-amber-800/90 pt-1 flex items-center gap-1.5">
                     <Info size={12} className="shrink-0 text-amber-700" />
-                    <span>Chacun peut envoyer son montant par Wave / Orange Money à <strong>{group.host}</strong>.</span>
+                    <span>Chacun peut régler sa part par Mobile Money ou tout autre moyen de paiement à <strong>{group.host}</strong>.</span>
                   </p>
                   <button
                     type="button"
@@ -818,13 +819,19 @@ export default function GroupOrder() {
                     <span>Commande validée · Suivre la livraison →</span>
                   </Link>
                 ) : isHost ? (
-                  <Button
-                    onClick={proceedToCheckout}
-                    disabled={group.items.length === 0}
-                    className="w-full py-3.5 text-sm font-bold shadow-md"
-                  >
-                    Passer la commande du groupe ({fmt(grandTotal)}) →
-                  </Button>
+                  <div className="space-y-1.5">
+                    <Button
+                      onClick={proceedToCheckout}
+                      disabled={group.items.length === 0}
+                      className="w-full py-3.5 text-sm font-bold shadow-md"
+                    >
+                      Passer la commande du groupe ({fmt(grandTotal)}) →
+                    </Button>
+                    <p className="text-center text-[11px] text-zinc-500 flex items-center justify-center gap-1.5 pt-0.5">
+                      <BadgePercent size={13} className="text-primary-600" />
+                      <span>Codes promo & réductions applicables à l'étape suivante</span>
+                    </p>
+                  </div>
                 ) : (
                   <div className="rounded-2xl border border-primary-200/80 bg-primary-50/70 p-4 text-center space-y-2">
                     <div className="mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-primary-100 text-primary-600">
