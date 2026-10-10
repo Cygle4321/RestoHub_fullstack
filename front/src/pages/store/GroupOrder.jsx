@@ -43,6 +43,7 @@ import { useCart } from "../../store/CartContext";
 import { fmt } from "../../lib/mappers";
 import SEO from "../../components/common/SEO";
 import { storeApi } from "../../api/store";
+import { waLink } from "../../lib/whatsapp";
 import GroupOrderModal from "../../components/common/GroupOrderModal";
 
 // Helper de persistance synchrone locale pour synchroniser entre onglets
@@ -222,12 +223,11 @@ export default function GroupOrder() {
   };
 
   const shareOnWhatsApp = () => {
-    const message = encodeURIComponent(
+    const rawText =
       `👋 Salut l'équipe ! Je prépare notre commande groupée chez *${restaurant?.name || "notre restaurant"}* pour le déjeuner 🍲.\n\n` +
       `👉 Cliquez ici pour ajouter votre plat à mon panier avant la clôture :\n${shareUrl}\n\n` +
-      `Code du salon : *${code}*`
-    );
-    window.open(`https://wa.me/?text=${message}`, "_blank", "noopener");
+      `Code du salon : *${code}*`;
+    window.open(waLink("", rawText), "_blank", "noopener");
   };
 
   const shareRefundsWhatsApp = () => {
@@ -240,8 +240,7 @@ export default function GroupOrder() {
       `---------------------------------`,
       `👉 Merci de régler votre part par Mobile Money ou votre moyen de paiement habituel à *${group.host}* ! Bon appétit l'équipe 🍲`,
     ];
-    const message = encodeURIComponent(lines.join("\n"));
-    window.open(`https://wa.me/?text=${message}`, "_blank", "noopener");
+    window.open(waLink("", lines.join("\n")), "_blank", "noopener");
   };
 
   const toggleLock = async () => {

@@ -49,9 +49,9 @@ export function waLink(phone, text, defaultCountry = "229") {
   const norm = normalizePhone(phone, defaultCountry);
   const encoded = encodeURIComponent(text || "");
   if (!norm) {
-    return `https://wa.me/?text=${encoded}`;
+    return `https://api.whatsapp.com/send/?text=${encoded}`;
   }
-  return `https://wa.me/${norm}?text=${encoded}`;
+  return `https://api.whatsapp.com/send/?phone=${norm}&text=${encoded}`;
 }
 
 /**
@@ -81,9 +81,9 @@ export function generateOrderReceipt({ order, restaurantName = "RestoHub", store
   const dateStr = order.date || (order.created_at ? new Date(order.created_at).toLocaleDateString("fr-FR") : "Aujourd'hui");
 
   const lines = [
-    `🧾 *REÇU DE COMMANDE — ${restaurantName.toUpperCase()}*`,
-    `━━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `🔖 *Commande :* #${num}`,
+    `📋 *REÇU DE COMMANDE — ${restaurantName.toUpperCase()}*`,
+    `---------------------------------`,
+    `📦 *Commande :* #${num}`,
     `👤 *Client :* ${custName}`,
     `📅 *Date :* ${dateStr}`,
   ];
@@ -94,7 +94,7 @@ export function generateOrderReceipt({ order, restaurantName = "RestoHub", store
     lines.push(`👥 *Commande Groupée :* Salon ${order.group_code || ""}`);
   }
 
-  lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  lines.push(`---------------------------------`);
   lines.push(`🛒 *DÉTAIL DU PANIER :*`);
 
   const items = Array.isArray(order.items) ? order.items : [];
@@ -104,7 +104,7 @@ export function generateOrderReceipt({ order, restaurantName = "RestoHub", store
     const { cleanName, participant } = parseItemParticipant(it.name);
     const participantLabel = participant ? ` [👤 ${participant}]` : "";
 
-    lines.push(`• *${qty} × ${cleanName}*${participantLabel} — ${fmt(unitPrice * qty)}`);
+    lines.push(`• *${qty} x ${cleanName}*${participantLabel} - ${fmt(unitPrice * qty)}`);
 
     // Options et suppléments
     const opts = (it.options || []).map((o) => `${o.name}: ${o.choice || o.value}`).join(", ");
@@ -115,7 +115,7 @@ export function generateOrderReceipt({ order, restaurantName = "RestoHub", store
     }
   });
 
-  lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  lines.push(`---------------------------------`);
 
   const subtotal = items.reduce((sum, it) => sum + (it.price || it.unit_price || 0) * (it.qty || it.quantity || 1), 0);
   lines.push(`💵 *Sous-total :* ${fmt(subtotal)}`);
@@ -144,10 +144,10 @@ export function generateOrderReceipt({ order, restaurantName = "RestoHub", store
     lines.push(`📝 *Note :* _${order.customer_notes || order.notes}_`);
   }
 
-  lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  lines.push(`---------------------------------`);
   lines.push(`🔗 *SUIVRE MA COMMANDE EN DIRECT :*`);
   lines.push(`${trackUrl}`);
-  lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  lines.push(`---------------------------------`);
   lines.push(`✨ *Merci pour votre confiance !* Bon appétit de la part de toute l'équipe de *${restaurantName}* 🍲`);
 
   return lines.join("\n");

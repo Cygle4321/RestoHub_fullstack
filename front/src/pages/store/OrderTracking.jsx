@@ -171,7 +171,7 @@ export default function OrderTracking() {
               onClick={() => {
                 const trackUrl = getOrderTrackingUrl(order, slug);
                 const shareText = `👋 Bonjour ! Voici le lien pour suivre la commande *#${order.number}* chez *${restaurant?.name || "le restaurant"}* en temps réel 🍲 :\n\n🔗 ${trackUrl}\n\nStatut actuel : *${order.status}*`;
-                window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank", "noopener");
+                window.open(waLink("", shareText), "_blank", "noopener");
               }}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-2.5 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100 active:scale-95"
             >

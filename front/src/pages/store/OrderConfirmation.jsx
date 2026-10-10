@@ -195,7 +195,7 @@ export default function OrderConfirmation() {
                 restaurantName: restaurant?.name || "RestoHub",
                 storeSlug: slug,
               });
-              window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+              window.open(waLink("", text), "_blank", "noopener");
             }}
             className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 active:scale-95"
           >
