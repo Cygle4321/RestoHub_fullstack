@@ -301,7 +301,6 @@ class StoreController extends Controller
                     $groupOrder->update([
                         'order_id' => $order->id,
                         'status' => 'completed',
-                        'is_locked' => true,
                     ]);
                 }
             }

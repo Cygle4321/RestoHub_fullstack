@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Check, Star, UtensilsCrossed, SearchX } from "lucide-react";
+import { Check, Star, UtensilsCrossed, SearchX, MessageCircle, Share2, Receipt } from "lucide-react";
 import { Card, CardHeader, Badge, Button, Input, EmptyState, useToast } from "../../components/ui";
 import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
 import { fmt } from "../../lib/mappers";
+import { waLink, generateOrderReceipt, getOrderTrackingUrl } from "../../lib/whatsapp";
 import SEO from "../../components/common/SEO";
 
 const STATUS_ORDER = ["Nouvelle", "Confirmée", "En préparation", "Prête", "En livraison", "Livrée"];
 
 export default function OrderTracking() {
-  const { slug } = useStore();
+  const { slug, restaurant } = useStore();
   const toast = useToast();
   const [params] = useSearchParams();
   // Pré-remplissage depuis un QR code de facture (?number=…&phone=…)
@@ -145,6 +146,38 @@ export default function OrderTracking() {
             <div className="h-2 overflow-hidden rounded-full bg-gray-200">
               <div className="h-full rounded-full bg-primary-500 transition-all" style={{ width: `${progress}%` }} />
             </div>
+          </div>
+
+          {/* Actions WhatsApp directes */}
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                const text = generateOrderReceipt({
+                  order,
+                  restaurantName: restaurant?.name || "RestoHub",
+                  storeSlug: slug,
+                });
+                const clientPhone = order.customer?.phone || searchPhoneRef.current || phone;
+                window.open(waLink(clientPhone, text), "_blank", "noopener");
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3.5 py-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95"
+            >
+              <Receipt size={15} />
+              <span>Mon reçu sur WhatsApp</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const trackUrl = getOrderTrackingUrl(order, slug);
+                const shareText = `👋 Bonjour ! Voici le lien pour suivre la commande *#${order.number}* chez *${restaurant?.name || "le restaurant"}* en temps réel 🍲 :\n\n🔗 ${trackUrl}\n\nStatut actuel : *${order.status}*`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank", "noopener");
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-2.5 text-xs font-bold text-emerald-800 transition hover:bg-emerald-100 active:scale-95"
+            >
+              <Share2 size={15} />
+              <span>Partager le suivi</span>
+            </button>
           </div>
 
           {/* Stepper */}

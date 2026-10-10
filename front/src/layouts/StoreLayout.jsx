@@ -4,6 +4,8 @@ import { ShoppingBag, Clock, MapPin, Search, Menu as MenuIcon, X, Phone, Store }
 import { EmptyState } from "../components/ui";
 import { StoreProvider, useStore, initialsOf } from "../store/StoreContext";
 import { useCart } from "../store/CartContext";
+import { waLink } from "../lib/whatsapp";
+import GroupOrderModal from "../components/common/GroupOrderModal";
 
 export default function StoreLayout() {
   return (
@@ -21,6 +23,7 @@ function StoreLayoutInner() {
   const count = items.reduce((s, x) => s + x.qty, 0);
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [groupModalOpen, setGroupModalOpen] = useState(false);
 
   const hideStickyCart =
     location.pathname.endsWith("/cart") ||
@@ -115,21 +118,37 @@ function StoreLayoutInner() {
             }`}
           >
             <div className="flex flex-col gap-0.5 md:ml-8 md:flex-row md:items-center md:gap-1">
-              {[
-                { to: `/store/${slug}`, label: "Accueil" },
-                { to: `/store/${slug}/menu`, label: "Menu" },
-                { to: `/store/${slug}/group/GRP-101`, label: "Commande groupée" },
-                { to: `/store/${slug}/track`, label: "Suivre" },
-              ].map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMenuOpen(false)}
-                  className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900 md:py-1.5"
-                >
-                  {item.label}
-                </Link>
-              ))}
+              <Link
+                to={`/store/${slug}`}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900 md:py-1.5"
+              >
+                Accueil
+              </Link>
+              <Link
+                to={`/store/${slug}/menu`}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900 md:py-1.5"
+              >
+                Menu
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setGroupModalOpen(true);
+                }}
+                className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900 md:py-1.5 text-left cursor-pointer"
+              >
+                Commande groupée
+              </button>
+              <Link
+                to={`/store/${slug}/track`}
+                onClick={() => setMenuOpen(false)}
+                className="rounded-xl px-3 py-2.5 text-sm font-medium text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900 md:py-1.5"
+              >
+                Suivre
+              </Link>
             </div>
           </nav>
 
@@ -198,6 +217,31 @@ function StoreLayoutInner() {
           </button>
         </div>
       )}
+
+      {/* Floating WhatsApp Quick Contact Button */}
+      {restaurant?.phone && (
+        <a
+          href={waLink(restaurant.phone, `Bonjour *${restaurant.name || "Restaurant"}* ! J'aimerais avoir des informations sur votre menu 🍲`)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-20 md:bottom-6 right-4 z-40 flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 shadow-lg shadow-emerald-600/30 transition-all hover:scale-105 active:scale-95 text-xs font-bold ring-2 ring-white/80"
+          title="Poser une question sur WhatsApp"
+        >
+          <span className="flex h-5 w-5 items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91A9.85 9.85 0 0 0 12.04 2Zm5.8 14.03c-.24.68-1.42 1.3-1.96 1.35-.5.05-.98.23-2.78-.58a10.4 10.4 0 0 1-4.28-3.77c-.31-.46-.53-1-.75-1.54-.22-.55-.33-1.07-.35-1.6-.02-.52.36-1.13.62-1.44.26-.31.57-.39.76-.4h.55c.18 0 .41-.06.63.48.23.56.79 1.94.86 2.08.07.14.11.3.02.49-.09.19-.19.34-.37.53-.18.19-.28.28-.4.48-.12.2-.02.4.09.58.11.19.61.99 1.3 1.6.89.79 1.63 1.04 1.87 1.16.24.12.38.1.52-.06.14-.16.6-.7.76-.94.16-.24.32-.2.54-.12.22.08 1.4.66 1.64.78.24.12.4.18.46.28.06.1.06.59-.18 1.27Z"/>
+            </svg>
+          </span>
+          <span className="hidden sm:inline">Discuter sur WhatsApp</span>
+        </a>
+      )}
+
+      {/* Modal Commande Groupée accessible globalement */}
+      <GroupOrderModal
+        open={groupModalOpen}
+        onClose={() => setGroupModalOpen(false)}
+        slug={slug}
+      />
 
       {/* Cart Sidebar */}
     </div>

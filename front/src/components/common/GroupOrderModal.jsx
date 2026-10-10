@@ -13,6 +13,7 @@ export default function GroupOrderModal({ open, onClose, slug = "demo" }) {
   const [groupTitle, setGroupTitle] = useState("Pause Déjeuner Bureau");
   const [customCode, setCustomCode] = useState(() => `GRP-${Math.floor(100 + Math.random() * 900)}`);
   const [creating, setCreating] = useState(false);
+  const lastGroupCode = typeof localStorage !== "undefined" ? localStorage.getItem("restohub_last_group_code") : null;
 
   // Pour rejoindre
   const [joinCode, setJoinCode] = useState("");
@@ -25,6 +26,7 @@ export default function GroupOrderModal({ open, onClose, slug = "demo" }) {
     const cleanTitle = groupTitle.trim() || "Pause Déjeuner Bureau";
 
     localStorage.setItem("restohub_user_name", cleanHost);
+    localStorage.setItem("restohub_last_group_code", cleanCode);
     localStorage.setItem(`restohub_group_host_${cleanCode}`, "true");
 
     const initialData = {
@@ -33,7 +35,7 @@ export default function GroupOrderModal({ open, onClose, slug = "demo" }) {
       host: cleanHost,
       isLocked: false,
       createdAt: Date.now(),
-      expiresAt: Date.now() + 60 * 60 * 1000,
+      expiresAt: Date.now() + 2 * 60 * 60 * 1000,
       items: [],
     };
 
@@ -73,6 +75,7 @@ export default function GroupOrderModal({ open, onClose, slug = "demo" }) {
     const cleanName = joinName.trim() || "Invité";
 
     localStorage.setItem("restohub_user_name", cleanName);
+    localStorage.setItem("restohub_last_group_code", cleanCode);
     toast(`Connexion au salon ${cleanCode}…`);
     onClose();
     navigate(`/store/${slug}/group/${cleanCode}`);
@@ -87,6 +90,30 @@ export default function GroupOrderModal({ open, onClose, slug = "demo" }) {
       size="md"
     >
       <div className="space-y-5">
+        {lastGroupCode && (
+          <div className="flex items-center justify-between rounded-2xl bg-primary-50/80 border border-primary-200/70 p-3 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-primary-600 text-white font-mono font-bold text-[10px]">
+                {lastGroupCode.slice(0, 3)}
+              </span>
+              <div>
+                <p className="font-bold text-zinc-900">Dernier salon visité : {lastGroupCode}</p>
+                <p className="text-[11px] text-zinc-500">Reprendre ce salon d'équipe</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                navigate(`/store/${slug}/group/${lastGroupCode}`);
+              }}
+              className="rounded-lg bg-primary-600 px-2.5 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-primary-700 active:scale-95"
+            >
+              Y aller →
+            </button>
+          </div>
+        )}
+
         {/* Switch Onglets */}
         <div className="grid grid-cols-2 gap-1 rounded-2xl bg-zinc-100 p-1">
           <button
@@ -99,7 +126,7 @@ export default function GroupOrderModal({ open, onClose, slug = "demo" }) {
             }`}
           >
             <Sparkles size={14} className="text-primary-500" />
-            <span>Créer un salon</span>
+            <span>Créer un nouveau salon</span>
           </button>
           <button
             type="button"

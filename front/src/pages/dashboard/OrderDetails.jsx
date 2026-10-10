@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, CreditCard, MapPin, Phone, Printer, XCircle, X as XIcon, Users, Tag, Package } from "lucide-react";
+import { ArrowLeft, CheckCircle2, CreditCard, MapPin, Phone, Printer, XCircle, X as XIcon, Users, Tag, Package, MessageCircle } from "lucide-react";
 import QRCode from "qrcode";
 import { Avatar, Badge, Button, Card, CardHeader, Modal, Spinner, statusVariant, useToast } from "../../components/ui";
 import {
@@ -16,6 +16,7 @@ import { waLink, orderWaText } from "../../lib/whatsapp";
 import { useAuth } from "../../context/AuthContext";
 import { restaurantApi } from "../../api/restaurant";
 import BoxLabelsModal from "../../components/common/BoxLabelsModal";
+import WhatsAppNotifyModal from "../../components/common/WhatsAppNotifyModal";
 
 export default function OrderDetails() {
   const { id } = useParams();
@@ -27,6 +28,7 @@ export default function OrderDetails() {
   const [saving, setSaving] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [labelsOpen, setLabelsOpen] = useState(false);
+  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +55,7 @@ export default function OrderDetails() {
       const updated = await restaurantApi.updateOrderStatus(order._id, s);
       setOrder(updated);
       toast(`Commande ${order.number} : statut « ${s} »`);
+      setNotifyModalOpen(true);
     } catch (e) {
       toast(e?.message || "Erreur lors du changement de statut", "error");
     } finally {
@@ -181,14 +184,14 @@ export default function OrderDetails() {
                     <p className="text-sm font-semibold text-zinc-900">{order.customer?.name}</p>
                     <p className="mt-1 flex items-center gap-1.5 text-xs text-zinc-500"><Phone size={12} /> {order.customer?.phone}</p>
                     {order.address !== "—" && <p className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-500"><MapPin size={12} /> {order.address}</p>}
-                    <a
-                      href={waLink(order.customer?.phone, orderWaText(order))}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-100"
+                    <button
+                      type="button"
+                      onClick={() => setNotifyModalOpen(true)}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100 shadow-2xs"
                     >
-                      Contacter sur WhatsApp
-                    </a>
+                      <MessageCircle size={13} className="text-emerald-600" />
+                      <span>Notifier / Échanger sur WhatsApp</span>
+                    </button>
                   </div>
                 </div>
                 <div className="space-y-2 text-sm">
@@ -272,6 +275,14 @@ export default function OrderDetails() {
                   {s}
                 </Button>
               ))}
+              <Button
+                variant="secondary"
+                className="w-full text-emerald-700 hover:text-emerald-800 border-emerald-200 hover:bg-emerald-50/50"
+                onClick={() => setNotifyModalOpen(true)}
+              >
+                <MessageCircle size={15} className="text-emerald-600" />
+                <span>Notifier le client sur WhatsApp</span>
+              </Button>
               <Button variant="danger" className="w-full" onClick={() => setConfirmCancel(true)} disabled={order.status === "Annulée" || saving}>
                 <XCircle size={16} /> Annuler la commande
               </Button>
@@ -317,6 +328,14 @@ export default function OrderDetails() {
         onClose={() => setLabelsOpen(false)}
         order={order}
         restaurantName={restaurant?.name}
+      />
+
+      <WhatsAppNotifyModal
+        open={notifyModalOpen}
+        onClose={() => setNotifyModalOpen(false)}
+        order={order}
+        restaurantName={restaurant?.name}
+        storeSlug={restaurant?.slug}
       />
     </div>
   );

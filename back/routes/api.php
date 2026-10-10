@@ -80,6 +80,8 @@ Route::prefix('store/{slug}')->group(function () {
         Route::post('{code}/items', [GroupOrderController::class, 'addItem']);
         Route::delete('{code}/items/{itemId}', [GroupOrderController::class, 'removeItem']);
         Route::patch('{code}/lock', [GroupOrderController::class, 'toggleLock']);
+        Route::post('{code}/reset', [GroupOrderController::class, 'reset']);
+        Route::post('{code}/close', [GroupOrderController::class, 'close']);
     });
 });
 

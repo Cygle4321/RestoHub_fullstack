@@ -28,6 +28,7 @@ import {
   groupOrderItemsByParticipant,
 } from "../../lib/mappers";
 import BoxLabelsModal from "../../components/common/BoxLabelsModal";
+import WhatsAppNotifyModal from "../../components/common/WhatsAppNotifyModal";
 import { useAuth } from "../../context/AuthContext";
 
 /**
@@ -75,6 +76,7 @@ export default function Kitchen() {
   const [packagingMode, setPackagingMode] = useState({}); // { [orderId]: boolean }
   const [packedBoxes, setPackedBoxes] = useState({}); // { [`${orderId}_${person}`]: boolean }
   const [labelOrder, setLabelOrder] = useState(null);
+  const [notifyOrder, setNotifyOrder] = useState(null);
   const [, forceTick] = useState(0);
 
   const load = useCallback(
@@ -171,13 +173,7 @@ export default function Kitchen() {
   };
 
   const waOpen = (order) => {
-    let d = String(order.customer?.phone || "").replace(/\D+/g, "");
-    if (d.startsWith("0")) d = `229${d.slice(1)}`;
-    else if (!d.startsWith("229")) d = `229${d}`;
-    const txt = encodeURIComponent(
-      `Bonjour ${order.customer?.name || ""} ! Au sujet de votre commande ${order.number} : `
-    );
-    window.open(`https://wa.me/${d}?text=${txt}`, "_blank", "noopener");
+    setNotifyOrder(order);
   };
 
   const groupOrdersCount = activeOrders.filter(isGroupOrder).length;
@@ -615,6 +611,14 @@ export default function Kitchen() {
         onClose={() => setLabelOrder(null)}
         order={labelOrder}
         restaurantName={restaurant?.name}
+      />
+
+      <WhatsAppNotifyModal
+        open={Boolean(notifyOrder)}
+        onClose={() => setNotifyOrder(null)}
+        order={notifyOrder}
+        restaurantName={restaurant?.name}
+        storeSlug={restaurant?.slug}
       />
     </div>
   );

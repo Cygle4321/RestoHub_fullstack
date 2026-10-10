@@ -52,7 +52,7 @@ export default function Checkout() {
     setPromoError("");
   };
 
-  const isGroupOrder = Boolean(state?.isGroupOrder);
+  const isGroupOrder = Boolean(state?.isGroupOrder || items.some((it) => Boolean(parseItemParticipant(it.name).participant)));
   const groupCode = state?.groupCode || "";
   const hostName = state?.hostName || "";
   const groupNotes = state?.groupNotes || "";
@@ -62,6 +62,7 @@ export default function Checkout() {
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [customerNotes, setCustomerNotes] = useState(groupNotes || "");
+  const [showPromoInput, setShowPromoInput] = useState(Boolean(isGroupOrder || state?.promoCode));
   const [zone, setZone] = useState(zones[0]?.id ?? "");
   const [mode, setMode] = useState("Livraison");
   const [payment, setPayment] = useState("Mobile Money");
@@ -188,26 +189,49 @@ export default function Checkout() {
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_380px]">
         {/* Formulaire */}
         <div className="space-y-4">
-          {/* Vos informations */}
+          {/* Coordonnées */}
           <Card>
-            <CardHeader title="Vos informations" subtitle="Pour vous contacter au sujet de la livraison" />
+            <CardHeader
+              title={isGroupOrder ? "Coordonnées de l'organisateur" : "Vos coordonnées"}
+              subtitle={isGroupOrder ? "Pour vous contacter et vous remettre les repas du groupe" : "Pour vous contacter au sujet de votre commande"}
+            />
             <div className="grid gap-4 p-5 sm:grid-cols-2">
               <div>
-                <Input label="Nom complet (Organisateur)" placeholder="Ex : Aminata Koné" value={name} onChange={(e) => setName(e.target.value)} />
+                <Input
+                  label={isGroupOrder ? "Nom de l'organisateur (Référent de livraison)" : "Nom complet"}
+                  placeholder={isGroupOrder ? "Ex : Moussa Traoré" : "Ex : Koffi Mensah"}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
                 {errors.name && <p className="mt-1 text-xs font-medium text-danger-600">{errors.name}</p>}
               </div>
               <div>
-                <Input label="Téléphone" placeholder="+225 07 00 00 00" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input
+                  label="Téléphone (WhatsApp)"
+                  placeholder="Ex : 64000001 ou +229..."
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
                 {errors.phone && <p className="mt-1 text-xs font-medium text-danger-600">{errors.phone}</p>}
               </div>
               <div className="sm:col-span-2">
-                <Input label="Email (optionnel)" type="email" placeholder="vous@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input
+                  label="Email (optionnel)"
+                  type="email"
+                  placeholder="vous@exemple.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
               <div className="sm:col-span-2">
                 <Textarea
-                  label="Instructions pour la cuisine & livraison"
+                  label={isGroupOrder ? "Instructions de livraison & répartition des repas" : "Instructions pour la cuisine ou la livraison (optionnel)"}
                   rows={2}
-                  placeholder="Ex : Répartition des sacs, code de la porte, sonnette…"
+                  placeholder={
+                    isGroupOrder
+                      ? "Ex : Répartition des sacs par service, bureau 204, étage 2…"
+                      : "Ex : Sans piment, sonner à l'interphone, instructions livreur…"
+                  }
                   value={customerNotes}
                   onChange={(e) => setCustomerNotes(e.target.value)}
                 />
@@ -332,44 +356,9 @@ export default function Checkout() {
           <Card>
             <CardHeader title="Résumé de la commande" />
             <div className="space-y-2 p-5 text-sm">
-              {/* Code promo / Coupon de réduction */}
-              <div className="pb-2 border-b border-zinc-100">
-                {!promo ? (
-                  <div>
-                    <div className="flex gap-2">
-                      <input
-                        value={promoInput}
-                        onChange={(e) => {
-                          setPromoInput(e.target.value.toUpperCase());
-                          setPromoError("");
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            applyPromo();
-                          }
-                        }}
-                        placeholder={isGroupOrder ? "Code promo (ex: GROUPE10, PROMO10)" : "Code promo (ex: PROMO10)"}
-                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold uppercase tracking-wider placeholder:font-normal placeholder:normal-case placeholder:text-zinc-400 focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/10"
-                      />
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        className="shrink-0 px-3 text-xs"
-                        onClick={applyPromo}
-                        disabled={checkingPromo || !promoInput.trim()}
-                      >
-                        {checkingPromo ? <Loader2 size={13} className="animate-spin" /> : "Appliquer"}
-                      </Button>
-                    </div>
-                    {promoError && (
-                      <p className="mt-1.5 flex items-center gap-1 text-[11px] font-medium text-danger-600">
-                        <XCircle size={12} /> {promoError}
-                      </p>
-                    )}
-                  </div>
-                ) : (
+              {/* Code promo / Réduction */}
+              <div className="pb-3 border-b border-zinc-100">
+                {promo ? (
                   <div className="flex items-center justify-between rounded-xl bg-success-50 px-3 py-2 text-xs font-semibold text-success-700 ring-1 ring-inset ring-success-200">
                     <span className="flex items-center gap-1.5">
                       <CheckCircle2 size={14} /> Code {promo.code} appliqué
@@ -386,6 +375,107 @@ export default function Checkout() {
                       <X size={14} />
                     </button>
                   </div>
+                ) : isGroupOrder ? (
+                  /* Pour commande groupée : champ bien identifié pour les remises d'équipe */
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-zinc-700 flex items-center gap-1">
+                        <BadgePercent size={13} className="text-primary-600" />
+                        <span>Code promo groupe (ex: GROUPE10)</span>
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        value={promoInput}
+                        onChange={(e) => {
+                          setPromoInput(e.target.value.toUpperCase());
+                          setPromoError("");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            applyPromo();
+                          }
+                        }}
+                        placeholder="Ex : GROUPE10, BUREAU20"
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold uppercase tracking-wider placeholder:font-normal placeholder:normal-case placeholder:text-zinc-400 focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/10"
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="shrink-0 px-3 text-xs"
+                        onClick={applyPromo}
+                        disabled={checkingPromo || !promoInput.trim()}
+                      >
+                        {checkingPromo ? <Loader2 size={13} className="animate-spin" /> : "Appliquer"}
+                      </Button>
+                    </div>
+                    {promoError && (
+                      <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-danger-600">
+                        <XCircle size={12} /> {promoError}
+                      </p>
+                    )}
+                  </div>
+                ) : showPromoInput ? (
+                  /* Pour commande individuelle si le client a cliqué sur 'Vous avez un code promo ?' */
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-medium text-zinc-600 flex items-center gap-1">
+                        <Tag size={12} className="text-zinc-400" />
+                        <span>Code promo</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowPromoInput(false)}
+                        className="text-[10px] text-zinc-400 hover:text-zinc-600"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        value={promoInput}
+                        onChange={(e) => {
+                          setPromoInput(e.target.value.toUpperCase());
+                          setPromoError("");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            applyPromo();
+                          }
+                        }}
+                        placeholder="Ex : PROMO10"
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold uppercase tracking-wider placeholder:font-normal placeholder:normal-case placeholder:text-zinc-400 focus:border-primary-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/10"
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="shrink-0 px-3 text-xs"
+                        onClick={applyPromo}
+                        disabled={checkingPromo || !promoInput.trim()}
+                      >
+                        {checkingPromo ? <Loader2 size={13} className="animate-spin" /> : "Appliquer"}
+                      </Button>
+                    </div>
+                    {promoError && (
+                      <p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-danger-600">
+                        <XCircle size={12} /> {promoError}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  /* Pour commande individuelle sans code : lien discret non intrusif */
+                  <button
+                    type="button"
+                    onClick={() => setShowPromoInput(true)}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-primary-600 transition"
+                  >
+                    <Tag size={13} className="text-zinc-400" />
+                    <span>Vous avez un code promo ?</span>
+                  </button>
                 )}
               </div>
               {items.map((it) => {

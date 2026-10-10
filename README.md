@@ -248,4 +248,4 @@ cd back && php artisan schedule:list
 
 ## Licence
 
-Projet privé — RestoHub.  64000001 et 66000001 fedapay
+Projet privé — RestoHub.  0164000001 et 0166000001 fedapay

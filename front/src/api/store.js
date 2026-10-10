@@ -96,6 +96,14 @@ export const storeApi = {
   toggleGroupLock: async (slug, code, isLocked) => {
     return apiClient.patch(`/store/${slug}/group/${code}/lock`, { is_locked: isLocked }, { auth: false });
   },
+
+  resetGroup: async (slug, code) => {
+    return apiClient.post(`/store/${slug}/group/${code}/reset`, {}, { auth: false });
+  },
+
+  closeGroup: async (slug, code) => {
+    return apiClient.post(`/store/${slug}/group/${code}/close`, {}, { auth: false });
+  },
 };
 
 function mapPaymentMethod(p) {

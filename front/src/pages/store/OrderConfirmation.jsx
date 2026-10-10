@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle2, XCircle, MapPin, Clock, CreditCard, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, MapPin, Clock, CreditCard, Loader2, MessageCircle, Share2, Users } from "lucide-react";
 import { Card, Badge, Button, EmptyState } from "../../components/ui";
 import { useStore } from "../../store/StoreContext";
 import { storeApi } from "../../api/store";
 import { fmt } from "../../lib/mappers";
+import { waLink, generateOrderReceipt, generateGroupShareMessage } from "../../lib/whatsapp";
 import SEO from "../../components/common/SEO";
 
 export default function OrderConfirmation() {
   const { state } = useLocation();
-  const { slug } = useStore();
+  const { slug, restaurant } = useStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -166,10 +167,54 @@ export default function OrderConfirmation() {
         </div>
       </Card>
 
-      <div className="mt-6 space-y-2">
-        <Button className="w-full" onClick={() => navigate(`/store/${slug}/track`)}>
-          <MapPin size={16} /> Suivre ma commande
+      {/* Actions WhatsApp & Suivi */}
+      <div className="mt-6 space-y-2.5">
+        <button
+          type="button"
+          onClick={() => {
+            const text = generateOrderReceipt({
+              order,
+              restaurantName: restaurant?.name || "RestoHub",
+              storeSlug: slug,
+            });
+            const phone = order?.customer?.phone || order?.customer_phone || "";
+            window.open(waLink(phone, text), "_blank", "noopener");
+          }}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-md transition hover:bg-emerald-700 active:scale-95"
+        >
+          <MessageCircle size={18} />
+          <span>Recevoir / Ouvrir mon reçu sur WhatsApp</span>
+        </button>
+
+        {(order.group_code || order.is_group_order || state?.isGroupOrder) && (
+          <button
+            type="button"
+            onClick={() => {
+              const text = generateGroupShareMessage({
+                order,
+                restaurantName: restaurant?.name || "RestoHub",
+                storeSlug: slug,
+              });
+              window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+            }}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 active:scale-95"
+          >
+            <Users size={16} />
+            <span>Partager le suivi aux collègues sur WhatsApp</span>
+          </button>
+        )}
+
+        <Button
+          className="w-full"
+          onClick={() => {
+            const num = order.number || order.id || "";
+            const phone = order.customer?.phone || order.customer_phone || "";
+            navigate(`/store/${slug}/track?number=${encodeURIComponent(num)}&phone=${encodeURIComponent(phone)}`);
+          }}
+        >
+          <MapPin size={16} /> Suivre ma commande en direct
         </Button>
+
         <Button variant="secondary" className="w-full" onClick={() => navigate(`/store/${slug}`)}>
           Retour à l'accueil
         </Button>

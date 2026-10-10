@@ -24,6 +24,7 @@ import {
   Tag,
   Info,
   BadgePercent,
+  RotateCcw,
 } from "lucide-react";
 import {
   Badge,
@@ -42,6 +43,7 @@ import { useCart } from "../../store/CartContext";
 import { fmt } from "../../lib/mappers";
 import SEO from "../../components/common/SEO";
 import { storeApi } from "../../api/store";
+import GroupOrderModal from "../../components/common/GroupOrderModal";
 
 // Helper de persistance synchrone locale pour synchroniser entre onglets
 function getStoredGroup(code, defaultHost = "Moussa") {
@@ -52,34 +54,14 @@ function getStoredGroup(code, defaultHost = "Moussa") {
   } catch {
     /* fallback */
   }
-  const isDemo = code === "GRP-101" || code.toLowerCase().includes("demo");
   return {
     code,
-    name: isDemo ? "Déjeuner d'équipe Tech" : "Pause Déjeuner Bureau",
+    name: "Pause Déjeuner Bureau",
     host: defaultHost,
     isLocked: false,
     createdAt: Date.now(),
-    expiresAt: Date.now() + 45 * 60 * 1000, // 45 minutes
-    items: isDemo ? [
-      {
-        id: "item_demo_1",
-        productId: 1,
-        name: "Poulet Braisé & Attiéké",
-        price: 3500,
-        participant: defaultHost,
-        options: [{ name: "Piment", choice: "Moyen" }],
-        supplements: [{ name: "Alloco supplémentaire", price: 1000 }],
-      },
-      {
-        id: "item_demo_2",
-        productId: 2,
-        name: "Poisson Carpe Grillée",
-        price: 4500,
-        participant: "Aïcha",
-        options: [{ name: "Cuisson", choice: "Bien cuit" }],
-        supplements: [],
-      },
-    ] : [],
+    expiresAt: Date.now() + 2 * 60 * 60 * 1000, // 2 heures
+    items: [],
   };
 }
 
@@ -110,8 +92,39 @@ export default function GroupOrder() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedChoices, setSelectedChoices] = useState({});
   const [selectedSupps, setSelectedSupps] = useState([]);
-  const [timeLeftMinutes, setTimeLeftMinutes] = useState(42);
   const [syncing, setSyncing] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [nowTime, setNowTime] = useState(() => Date.now());
+
+  // Horloge temps réel (rafraîchit le compte à rebours et l'état d'expiration toutes les 15s)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNowTime(Date.now());
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Mémorise le dernier code salon visité
+  useEffect(() => {
+    if (code) {
+      localStorage.setItem("restohub_last_group_code", code);
+    }
+  }, [code]);
+
+  // Détection d'expiration (2h ou session créée la veille)
+  const isExpired = useMemo(() => {
+    if (group?.status === "completed") return false;
+    if (group?.status === "expired" || group?.isExpired) return true;
+    if (group?.expiresAt && nowTime > group.expiresAt) return true;
+    if (group?.createdAt && nowTime - group.createdAt > 12 * 3600 * 1000) return true;
+    return false;
+  }, [group, nowTime]);
+
+  const timeLeftMinutes = useMemo(() => {
+    if (!group?.expiresAt) return 0;
+    const diff = group.expiresAt - nowTime;
+    return Math.max(0, Math.round(diff / 60000));
+  }, [group?.expiresAt, nowTime]);
 
   const fetchGroupData = async (silent = false) => {
     if (!slug || slug === "demo") return;
@@ -163,13 +176,34 @@ export default function GroupOrder() {
     };
   }, [slug, code]);
 
-  // Compte à rebours simulé
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeftMinutes((prev) => Math.max(1, prev - 1));
-    }, 60000);
-    return () => clearInterval(timer);
-  }, []);
+  const handleResetGroup = async () => {
+    if (!window.confirm("Voulez-vous réinitialiser ce salon ? Tous les plats actuels seront effacés et le délai sera renouvelé pour 2 heures.")) {
+      return;
+    }
+    try {
+      if (slug && slug !== "demo") {
+        const res = await storeApi.resetGroup(slug, code);
+        if (res && res.code) {
+          updateGroupState(res);
+          toast("Le salon a été réinitialisé à neuf !");
+          return;
+        }
+      }
+      const resetData = {
+        ...group,
+        items: [],
+        isLocked: false,
+        status: "open",
+        isExpired: false,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 2 * 3600 * 1000,
+      };
+      updateGroupState(resetData);
+      toast("Le salon a été réinitialisé à neuf !");
+    } catch (err) {
+      toast("Erreur lors de la réinitialisation", "error");
+    }
+  };
 
   const updateGroupState = (nextData) => {
     setGroup(nextData);
@@ -279,6 +313,10 @@ export default function GroupOrder() {
       toast("La commande d'équipe a déjà été validée et envoyée en cuisine", "info");
       return;
     }
+    if (isExpired) {
+      toast("Ce salon a expiré. Créez un nouveau salon ou réinitialisez-le pour commander.", "warning");
+      return;
+    }
     if (group.isLocked) {
       toast("Le salon a été clôturé par l'organisateur", "error");
       return;
@@ -362,6 +400,10 @@ export default function GroupOrder() {
 
   // Convertir le panier de groupe en checkout RestoHub officiel
   const proceedToCheckout = () => {
+    if (isExpired) {
+      toast("Ce salon a expiré. Lancez un nouveau salon pour commander aujourd'hui.", "warning");
+      return;
+    }
     if (!isHost) {
       toast(`Seul l'organisateur (${group.host}) peut valider et passer la commande du groupe`, "warning");
       return;
@@ -459,6 +501,46 @@ export default function GroupOrder() {
         </div>
       )}
 
+      {/* Bannière Salon Expiré */}
+      {isExpired && group.status !== "completed" && (
+        <div className="mb-6 overflow-hidden rounded-3xl border border-amber-300/60 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 p-5 sm:p-6 shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-700 ring-1 ring-amber-500/30">
+              <Clock size={24} />
+            </span>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base sm:text-lg font-black text-zinc-900">Ce salon de commande a expiré</h2>
+                <span className="rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-xs font-bold">
+                  Délai dépassé
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-zinc-600 leading-relaxed max-w-xl">
+                Ce salon a été créé il y a plus de 2 heures (ou la veille). Les ajouts sont verrouillés pour cette session. Vous pouvez lancer un nouveau salon pour la commande d'aujourd'hui ou réinitialiser le panier d'équipe.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              onClick={() => setCreateModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-primary-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm transition hover:bg-primary-700 active:scale-95 cursor-pointer"
+            >
+              <Sparkles size={15} />
+              <span>Nouveau salon pour aujourd'hui</span>
+            </button>
+            {isHost && (
+              <button
+                onClick={handleResetGroup}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-zinc-700 shadow-xs transition hover:bg-zinc-50 active:scale-95 cursor-pointer"
+              >
+                <RotateCcw size={14} />
+                <span>Réinitialiser à neuf</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Top Banner : Salon de Commande */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-950 p-6 text-white shadow-xl sm:p-8">
         <div className="absolute -right-12 -top-12 h-44 w-44 rounded-full bg-primary-500/20 blur-3xl pointer-events-none" />
@@ -475,25 +557,31 @@ export default function GroupOrder() {
                 className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
                   group.status === "completed"
                     ? "bg-primary-500/20 text-primary-300 ring-1 ring-inset ring-primary-500/30"
-                    : group.isLocked
-                      ? "bg-amber-500/20 text-amber-300"
-                      : "bg-emerald-500/20 text-emerald-300"
+                    : isExpired
+                      ? "bg-rose-500/20 text-rose-300 ring-1 ring-inset ring-rose-500/30"
+                      : group.isLocked
+                        ? "bg-amber-500/20 text-amber-300"
+                        : "bg-emerald-500/20 text-emerald-300"
                 }`}
               >
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${
                     group.status === "completed"
                       ? "bg-primary-400"
-                      : group.isLocked
-                        ? "bg-amber-400"
-                        : "animate-pulse bg-emerald-400"
+                      : isExpired
+                        ? "bg-rose-400"
+                        : group.isLocked
+                          ? "bg-amber-400"
+                          : "animate-pulse bg-emerald-400"
                   }`}
                 />
                 {group.status === "completed"
                   ? "Commande validée en cuisine ✓"
-                  : group.isLocked
-                    ? "Salon clôturé"
-                    : "Ouvert aux ajouts"}
+                  : isExpired
+                    ? "Session expirée"
+                    : group.isLocked
+                      ? "Salon clôturé"
+                      : "Ouvert aux ajouts"}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-zinc-200">
                 <span className="relative flex h-2 w-2">
@@ -510,11 +598,13 @@ export default function GroupOrder() {
             <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-zinc-300">
               <span>Organisé par <strong className="text-white">{group.host}</strong></span>
               <span>·</span>
-              <span className="inline-flex items-center gap-1 text-primary-300">
+              <span className={`inline-flex items-center gap-1 ${isExpired ? "text-rose-300 font-semibold" : "text-primary-300"}`}>
                 <Clock size={13} />
                 {group.status === "completed"
                   ? "Commande envoyée au restaurant"
-                  : `Clôture prévue dans ~${timeLeftMinutes} min`}
+                  : isExpired
+                    ? "Délai de session dépassé"
+                    : `Clôture prévue dans ~${timeLeftMinutes} min`}
               </span>
               <span>·</span>
               <span>{restaurant?.name}</span>
@@ -524,12 +614,23 @@ export default function GroupOrder() {
           {/* Actions d'invitation & gestion */}
           <div className="flex flex-wrap items-center gap-2.5">
             <button
-              onClick={shareOnWhatsApp}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
+              onClick={() => setCreateModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-primary-400/40 bg-primary-500/20 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-primary-200 transition hover:bg-primary-500/30 active:scale-95 cursor-pointer"
+              title="Créer un nouveau salon pour aujourd'hui"
             >
-              <MessageCircle size={16} />
-              <span>Inviter sur WhatsApp</span>
+              <Sparkles size={15} className="text-primary-300" />
+              <span>Nouveau salon</span>
             </button>
+
+            {!isExpired && (
+              <button
+                onClick={shareOnWhatsApp}
+                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 active:scale-95"
+              >
+                <MessageCircle size={16} />
+                <span>Inviter sur WhatsApp</span>
+              </button>
+            )}
 
             <button
               onClick={copyShareLink}
@@ -541,6 +642,17 @@ export default function GroupOrder() {
             </button>
 
             {isHost && (
+              <button
+                onClick={handleResetGroup}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-xs sm:text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
+                title="Vider les anciens plats et renouveler ce salon (+2h)"
+              >
+                <RotateCcw size={14} />
+                <span className="hidden md:inline">Réinitialiser</span>
+              </button>
+            )}
+
+            {isHost && !isExpired && (
               <button
                 onClick={toggleLock}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3 py-2.5 text-xs sm:text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
@@ -675,7 +787,7 @@ export default function GroupOrder() {
                       <span className="text-xs sm:text-sm font-bold text-zinc-900">{fmt(p.price)}</span>
                       <button
                         onClick={() => openProductConfig(p)}
-                        disabled={group.isLocked || !p.available}
+                        disabled={group.isLocked || isExpired || !p.available}
                         className="inline-flex items-center gap-1 rounded-lg bg-primary-600 px-2.5 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-primary-700 disabled:opacity-40"
                       >
                         <Plus size={13} strokeWidth={2.5} />
@@ -818,6 +930,35 @@ export default function GroupOrder() {
                     <CheckCircle2 size={16} />
                     <span>Commande validée · Suivre la livraison →</span>
                   </Link>
+                ) : isExpired ? (
+                  <div className="space-y-2.5 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-center">
+                    <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-amber-200 text-amber-800">
+                      <Clock size={16} />
+                    </div>
+                    <p className="text-xs font-bold text-amber-900">Ce salon a expiré</p>
+                    <p className="text-[11px] text-amber-800 leading-relaxed">
+                      La session d'équipe n'est plus active. Vous pouvez créer un nouveau salon pour aujourd'hui ou réinitialiser le panier.
+                    </p>
+                    <div className="pt-1 space-y-1.5">
+                      <Button
+                        onClick={() => setCreateModalOpen(true)}
+                        className="w-full py-2.5 text-xs font-bold shadow-xs cursor-pointer"
+                      >
+                        <Sparkles size={13} />
+                        <span>Nouveau salon pour aujourd'hui</span>
+                      </Button>
+                      {isHost && (
+                        <Button
+                          variant="outline"
+                          onClick={handleResetGroup}
+                          className="w-full py-2 text-xs font-semibold cursor-pointer"
+                        >
+                          <RotateCcw size={12} />
+                          <span>Réinitialiser ce salon (+2h)</span>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 ) : isHost ? (
                   <div className="space-y-1.5">
                     <Button
@@ -1006,6 +1147,13 @@ export default function GroupOrder() {
           </div>
         )}
       </Modal>
+
+      {/* Modal Création / Changement de salon */}
+      <GroupOrderModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        slug={slug}
+      />
     </div>
   );
 }

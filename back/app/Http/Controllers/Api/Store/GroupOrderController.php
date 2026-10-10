@@ -39,6 +39,19 @@ class GroupOrderController extends Controller
             ->first();
 
         if ($existing) {
+            // Si le salon existant a expiré ou date de la veille, on le réinitialise à neuf pour la nouvelle session
+            if ($existing->isExpired() || in_array($existing->status, ['completed', 'cancelled']) || ($existing->created_at && $existing->created_at->lt(now()->subHours(12)))) {
+                $existing->items()->delete();
+                $existing->update([
+                    'title' => !empty($data['title']) ? trim($data['title']) : 'Pause Déjeuner Bureau',
+                    'host_name' => trim($data['host_name']),
+                    'host_phone' => $data['host_phone'] ?? null,
+                    'status' => 'open',
+                    'order_id' => null,
+                    'expires_at' => now()->addHours(2),
+                ]);
+                $existing->load(['items.product']);
+            }
             return response()->json($this->formatGroupOrder($existing));
         }
 
@@ -97,9 +110,9 @@ class GroupOrderController extends Controller
             ->where('code', strtoupper($code))
             ->firstOrFail();
 
-        if ($groupOrder->status !== 'open') {
+        if ($groupOrder->status !== 'open' || $groupOrder->isExpired()) {
             return response()->json([
-                'message' => 'Ce salon de commande est actuellement verrouillé.',
+                'message' => 'Ce salon de commande a expiré ou est actuellement verrouillé.',
             ], 422);
         }
 
@@ -147,9 +160,9 @@ class GroupOrderController extends Controller
             ->where('code', strtoupper($code))
             ->firstOrFail();
 
-        if ($groupOrder->status !== 'open') {
+        if ($groupOrder->status !== 'open' || $groupOrder->isExpired()) {
             return response()->json([
-                'message' => 'Ce salon de commande est actuellement verrouillé.',
+                'message' => 'Ce salon de commande a expiré ou est actuellement verrouillé.',
             ], 422);
         }
 
@@ -183,6 +196,56 @@ class GroupOrderController extends Controller
 
         $groupOrder->status = $data['is_locked'] ? 'locked' : 'open';
         $groupOrder->save();
+
+        $groupOrder->load(['items.product']);
+
+        return response()->json($this->formatGroupOrder($groupOrder));
+    }
+
+    /**
+     * Réinitialise le salon de commande (vide les plats et prolonge la durée de 2h)
+     */
+    public function reset(Request $request, string $slug, string $code): JsonResponse
+    {
+        $restaurant = Restaurant::where('slug', $slug)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $groupOrder = GroupOrder::where('restaurant_id', $restaurant->id)
+            ->where('code', strtoupper($code))
+            ->firstOrFail();
+
+        // Supprime tous les items de l'ancien salon
+        $groupOrder->items()->delete();
+
+        // Réinitialise le statut et la date d'expiration (+2 heures)
+        $groupOrder->update([
+            'status' => 'open',
+            'order_id' => null,
+            'expires_at' => now()->addHours(2),
+        ]);
+
+        $groupOrder->load(['items.product']);
+
+        return response()->json($this->formatGroupOrder($groupOrder));
+    }
+
+    /**
+     * Clôture définitivement ou annule un salon
+     */
+    public function close(Request $request, string $slug, string $code): JsonResponse
+    {
+        $restaurant = Restaurant::where('slug', $slug)
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        $groupOrder = GroupOrder::where('restaurant_id', $restaurant->id)
+            ->where('code', strtoupper($code))
+            ->firstOrFail();
+
+        $groupOrder->update([
+            'status' => 'cancelled',
+        ]);
 
         $groupOrder->load(['items.product']);
 
@@ -236,13 +299,17 @@ class GroupOrderController extends Controller
 
         $grandTotal = array_sum($totalsByParticipant);
 
+        $isExpired = $group->isExpired() || ($group->created_at && $group->created_at->lt(now()->subHours(12)));
+        $effectiveStatus = ($group->status === 'open' && $isExpired) ? 'expired' : $group->status;
+
         return [
             'id' => $group->id,
             'code' => $group->code,
             'name' => $group->title,
             'host' => $group->host_name,
             'isLocked' => $group->status === 'locked',
-            'status' => $group->status,
+            'isExpired' => $isExpired && $group->status !== 'completed',
+            'status' => $effectiveStatus,
             'createdAt' => $group->created_at?->timestamp ? $group->created_at->timestamp * 1000 : null,
             'expiresAt' => $group->expires_at?->timestamp ? $group->expires_at->timestamp * 1000 : null,
             'items' => $itemsList,

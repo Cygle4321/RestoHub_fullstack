@@ -18,8 +18,10 @@ import {
   PageHeader,
 } from "../../components/ui";
 import { restaurantApi } from "../../api/restaurant";
+import { useAuth } from "../../context/AuthContext";
 import { fmt, orderStatusToApi, isGroupOrder, extractGroupCode, parseItemParticipant } from "../../lib/mappers";
 import { waLink, orderWaText } from "../../lib/whatsapp";
+import WhatsAppNotifyModal from "../../components/common/WhatsAppNotifyModal";
 
 const orderStatuses = ["Nouvelle", "Confirmée", "En préparation", "Prête", "En livraison", "Livrée", "Annulée"];
 
@@ -27,6 +29,7 @@ const MODE_TO_API = { Livraison: "livraison", Retrait: "retrait" };
 
 export default function Orders() {
   const toast = useToast();
+  const { restaurant } = useAuth();
   const [status, setStatus] = useState("Toutes");
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState("Tous");
@@ -35,6 +38,7 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [groupOnly, setGroupOnly] = useState(false);
+  const [notifyOrder, setNotifyOrder] = useState(null);
 
   const [total, setTotal] = useState(0);
 
@@ -90,7 +94,7 @@ export default function Orders() {
   const openWhatsApp = (e, o) => {
     e.preventDefault();
     e.stopPropagation();
-    window.open(waLink(o.customer?.phone, orderWaText(o)), "_blank", "noopener");
+    setNotifyOrder(o);
   };
 
   const countFor = (s) =>
@@ -338,6 +342,14 @@ export default function Orders() {
         </>
         )}
       </Card>
+
+      <WhatsAppNotifyModal
+        open={Boolean(notifyOrder)}
+        onClose={() => setNotifyOrder(null)}
+        order={notifyOrder}
+        restaurantName={restaurant?.name}
+        storeSlug={restaurant?.slug}
+      />
     </div>
   );
 }
